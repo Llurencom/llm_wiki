@@ -25,6 +25,7 @@ import { getFileCategory, getFileExtension, isTextReadable } from "@/lib/file-ty
 import { refreshProjectFileTree } from "@/lib/project-file-tree-refresh"
 import { summarizeAgentFileChange } from "@/lib/agent-file-activity"
 import { TodoNudge } from "@/components/todos/todo-nudge"
+import { useProjectHasContent } from "@/lib/project-content"
 
 type InternalChatSendOptions = ChatSendOptions & {
   suppressUserMessage?: boolean
@@ -463,6 +464,7 @@ export function ChatPanel() {
     : []
 
   const project = useWikiStore((s) => s.project)
+  const projectHasContent = useProjectHasContent()
   const projectPathIndex = useWikiStore((s) => s.projectPathIndex)
   const baseLlmConfig = useWikiStore((s) => s.llmConfig)
   const providerConfigs = useWikiStore((s) => s.providerConfigs)
@@ -1387,6 +1389,24 @@ export function ChatPanel() {
 
       <div className="flex flex-1 flex-col overflow-hidden">
         {!activeConversationId ? (
+          !projectHasContent ? (
+            <div className="flex flex-1 items-center justify-center text-muted-foreground">
+              <div className="max-w-sm text-center">
+                <FolderOpen className="mx-auto mb-3 h-8 w-8 opacity-30" />
+                <p className="text-sm">{t("chat.emptyProjectTitle")}</p>
+                <p className="mt-1 text-xs opacity-60">{t("chat.emptyProjectHint")}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 gap-2"
+                  onClick={() => useWikiStore.getState().setActiveView("sources")}
+                >
+                  <FolderOpen className="h-4 w-4" />
+                  {t("chat.emptyProjectImportCta")}
+                </Button>
+              </div>
+            </div>
+          ) : (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">
             <div className="text-center">
               <MessageSquare className="mx-auto mb-3 h-8 w-8 opacity-30" />
@@ -1394,6 +1414,7 @@ export function ChatPanel() {
               <p className="mt-1 text-xs opacity-60">{t("chat.clickNewChatToBegin")}</p>
             </div>
           </div>
+          )
           ) : (
             <>
               <div
