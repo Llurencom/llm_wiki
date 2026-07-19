@@ -103,13 +103,10 @@ function ChatMessageImpl({
   const isUser = message.role === "user"
   const isSystem = message.role === "system"
   const isAssistant = message.role === "assistant"
-  const [hovered, setHovered] = useState(false)
 
   return (
     <div
       className={`flex gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <div
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
@@ -189,7 +186,7 @@ function ChatMessageImpl({
             onSubmit={onSubmitUserInput}
           />
         )}
-        {isAssistant && hovered && (
+        {isAssistant && (
           <div className="flex items-center gap-1">
             <CopyButton content={message.content} />
             <SaveToWikiButton content={message.content} visible={true} />
