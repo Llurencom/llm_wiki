@@ -432,7 +432,7 @@ function App() {
       useWikiStore.getState().setOutputLanguage(projectOutputLang ?? "auto")
       setSelectedFile(null)
       setFileTree([])
-      setActiveView("wiki")
+      setActiveView("chat")
       useWikiStore.getState().setScheduledImportConfig({
         enabled: false,
         path: `${proj.path}/raw/sources`,

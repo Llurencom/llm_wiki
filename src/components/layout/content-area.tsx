@@ -6,6 +6,7 @@ import { SkillsSection } from "@/components/settings/sections/skills-section"
 import { SourcesView } from "@/components/sources/sources-view"
 import { ReviewView } from "@/components/review/review-view"
 import { LintView } from "@/components/lint/lint-view"
+import { TodosView } from "@/components/todos/todos-view"
 import { SearchView } from "@/components/search/search-view"
 import { GraphView } from "@/components/graph/graph-view"
 import { PreviewPanel } from "./preview-panel"
@@ -59,6 +60,8 @@ function ActiveContent({
       return <ReviewView />
     case "lint":
       return <LintView />
+    case "todos":
+      return <TodosView />
     case "search":
       return <SearchView />
     case "graph":

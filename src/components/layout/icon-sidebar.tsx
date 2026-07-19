@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
-  FileText, FolderOpen, Search, Network, ClipboardCheck, Settings, ArrowLeftRight, ClipboardList, Globe, MessageSquare, Sparkles,
+  FileText, FolderOpen, Search, Network, Settings, ArrowLeftRight, ListTodo, Globe, MessageSquare, Sparkles, MoreHorizontal,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
-import { useReviewStore } from "@/stores/review-store"
 import { useResearchStore } from "@/stores/research-store"
+import { useTodoTotalPending } from "@/lib/todos"
 import { useUpdateStore, hasAvailableUpdate } from "@/stores/update-store"
 import { useTranslation } from "react-i18next"
 import logoImg from "@/assets/logo.jpg"
@@ -17,14 +17,18 @@ import {
 
 type NavView = WikiState["activeView"]
 
-const NAV_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
+// Core layer — always present because any moment may need them.
+const CORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
   { view: "chat", icon: MessageSquare, labelKey: "nav.chat" },
-  { view: "wiki", icon: FileText, labelKey: "nav.wiki" },
   { view: "sources", icon: FolderOpen, labelKey: "nav.sources" },
+]
+
+// Secondary layer — reachable on demand from the "More" menu.
+const MORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
   { view: "search", icon: Search, labelKey: "nav.search" },
+  { view: "wiki", icon: FileText, labelKey: "nav.wiki" },
   { view: "graph", icon: Network, labelKey: "nav.graph" },
-  { view: "lint", icon: ClipboardCheck, labelKey: "nav.lint" },
-  { view: "review", icon: ClipboardList, labelKey: "nav.review" },
+  { view: "skills", icon: Sparkles, labelKey: "nav.skills" },
 ]
 
 interface IconSidebarProps {
@@ -35,7 +39,9 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
   const { t } = useTranslation()
   const activeView = useWikiStore((s) => s.activeView)
   const setActiveView = useWikiStore((s) => s.setActiveView)
-  const pendingCount = useReviewStore((s) => s.items.filter((i) => !i.resolved).length)
+  const todoCount = useTodoTotalPending()
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef<HTMLDivElement>(null)
   const researchPanelOpen = useResearchStore((s) => s.panelOpen)
   const researchActiveCount = useResearchStore((s) => s.tasks.filter((t) => t.status !== "done" && t.status !== "error").length)
   const toggleResearchPanel = useResearchStore((s) => s.setPanelOpen)
@@ -71,6 +77,20 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
     toggleResearchPanel(next.researchPanelOpen)
   }
 
+  useEffect(() => {
+    if (!moreOpen) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
+        setMoreOpen(false)
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => document.removeEventListener("pointerdown", onPointerDown)
+  }, [moreOpen])
+
+  // A More-menu view counts as active so the More button stays highlighted.
+  const moreActive = MORE_ITEMS.some((item) => item.view === activeView)
+
   return (
     <TooltipProvider delay={300}>
       <div className="flex h-full w-12 flex-col items-center border-r bg-muted/50 py-2">
@@ -82,9 +102,9 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
             className="h-8 w-8 rounded-[22%]"
           />
         </div>
-        {/* Top: main nav items + Deep Research */}
+        {/* Top: core nav items + Deep Research + More */}
         <div className="flex flex-1 flex-col items-center gap-1">
-          {NAV_ITEMS.map(({ view, icon: Icon, labelKey }) => (
+          {CORE_ITEMS.map(({ view, icon: Icon, labelKey }) => (
             <Tooltip key={view}>
               <TooltipTrigger
                 onClick={() => setActiveView(view)}
@@ -95,16 +115,8 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
                 }`}
               >
                 <Icon className="h-5 w-5" />
-                {view === "review" && pendingCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                    {pendingCount > 99 ? "99+" : pendingCount}
-                  </span>
-                )}
               </TooltipTrigger>
-              <TooltipContent side="right">
-                {t(labelKey)}
-                {view === "review" && pendingCount > 0 && ` (${pendingCount})`}
-              </TooltipContent>
+              <TooltipContent side="right">{t(labelKey)}</TooltipContent>
             </Tooltip>
           ))}
           {/* Deep Research — same row as other nav items */}
@@ -126,22 +138,65 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
             </TooltipTrigger>
             <TooltipContent side="right">{t("research.title")}</TooltipContent>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger
-              onClick={() => setActiveView("skills")}
-              className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
-                activeView === "skills"
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-              }`}
-            >
-              <Sparkles className="h-5 w-5" />
-            </TooltipTrigger>
-            <TooltipContent side="right">{t("nav.skills")}</TooltipContent>
-          </Tooltip>
+          {/* More — secondary views appear on demand, not always spread out */}
+          <div ref={moreRef} className="relative">
+            <Tooltip>
+              <TooltipTrigger
+                onClick={() => setMoreOpen((open) => !open)}
+                className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
+                  moreActive || moreOpen
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                }`}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </TooltipTrigger>
+              <TooltipContent side="right">{t("nav.more")}</TooltipContent>
+            </Tooltip>
+            {moreOpen && (
+              <div className="absolute left-11 top-0 z-30 w-40 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg">
+                {MORE_ITEMS.map(({ view, icon: Icon, labelKey }) => (
+                  <button
+                    key={view}
+                    type="button"
+                    onClick={() => {
+                      setActiveView(view)
+                      setMoreOpen(false)
+                    }}
+                    className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors ${
+                      activeView === view ? "bg-accent text-foreground" : "hover:bg-accent/60"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {t(labelKey)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        {/* Bottom: daemon status + settings + switch project */}
+        {/* Bottom: todos (only when pending) + daemon status + settings + switch project */}
         <div className="flex flex-col items-center gap-1 pb-1">
+          {/* Tasks entry — zero-state, zero-UI: appears only when there is
+              something to handle, and disappears when the queue is empty. */}
+          {todoCount > 0 && (
+            <Tooltip>
+              <TooltipTrigger
+                onClick={() => setActiveView("todos")}
+                className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
+                  activeView === "todos"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                }`}
+              >
+                <ListTodo className="h-5 w-5" />
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                  {todoCount > 99 ? "99+" : todoCount}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="right">{`${t("nav.todos")} (${todoCount})`}</TooltipContent>
+            </Tooltip>
+          )}
           {/* Daemon status indicator */}
           <Tooltip>
             <TooltipTrigger className="flex h-6 w-6 items-center justify-center">

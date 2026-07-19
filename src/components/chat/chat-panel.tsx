@@ -24,6 +24,7 @@ import { parseFrontmatter } from "@/lib/frontmatter"
 import { getFileCategory, getFileExtension, isTextReadable } from "@/lib/file-types"
 import { refreshProjectFileTree } from "@/lib/project-file-tree-refresh"
 import { summarizeAgentFileChange } from "@/lib/agent-file-activity"
+import { TodoNudge } from "@/components/todos/todo-nudge"
 
 type InternalChatSendOptions = ChatSendOptions & {
   suppressUserMessage?: boolean
@@ -1440,6 +1441,8 @@ export function ChatPanel() {
             )}
           </>
         )}
+
+        <TodoNudge />
 
         <ChatInput
           onSend={handleSend}

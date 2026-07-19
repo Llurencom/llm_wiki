@@ -27,6 +27,8 @@
     "skills": "Skills",
     "settings": "Settings",
     "switchProject": "Switch Project",
+    "more": "More",
+    "todos": "Tasks",
     "updateAvailable": "Update available",
     "updateAvailableSuffix": " · update"
   },
@@ -394,6 +396,15 @@
     "affectedPages": "Pages",
     "allClear": "All clear — nothing to review",
     "resolvedDivider": "— Resolved —"
+  },
+  "todos": {
+    "title": "Tasks",
+    "tabReview": "To handle",
+    "tabLint": "Quality",
+    "allClear": "No tasks",
+    "newTasks": "{{count}} new task(s) found",
+    "view": "View",
+    "dismiss": "Later"
   },
   "settings": {
     "title": "Settings",
