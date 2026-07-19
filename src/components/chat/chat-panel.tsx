@@ -1485,6 +1485,7 @@ export function ChatPanel() {
           onSelectedContextFilesChange={setSelectedContextFiles}
           anyTxtAvailable={anyTxtAvailable}
           imageInputAvailable={imageInputAvailable}
+          onFindPages={() => useWikiStore.getState().setActiveView("search")}
           placeholder={
             mode === "ingest"
               ? t("chat.ingestPlaceholder")

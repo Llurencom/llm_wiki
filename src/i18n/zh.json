@@ -255,6 +255,8 @@
     "emptyProjectImportCta": "去导入资料",
     "typeAMessage": "输入消息...",
     "useWebSearch": "网页搜索",
+    "findPages": "查找页面",
+    "findPagesHint": "在当前知识库中搜索 Wiki 页面和图片，并直接打开",
     "useAnyTxtSearch": "AnyTXT 搜索",
     "skills": "Skills",
     "enabledSkills": "已启用 Skills",
@@ -937,6 +939,7 @@
     }
   },
   "preview": {
+    "backTo": "返回{{source}}",
     "selectFile": "选择文件以预览",
     "notAvailable": "该文件类型暂不支持预览",
     "viewAsText": "作为文本查看",

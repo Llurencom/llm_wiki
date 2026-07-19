@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from "react"
-import { X } from "lucide-react"
+import { X, ArrowLeft } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useWikiStore } from "@/stores/wiki-store"
 import { readFile, writeFile } from "@/commands/fs"
 import { getFileCategory, isBinary, isExtractedTextPreviewFile } from "@/lib/file-types"
@@ -14,6 +15,8 @@ export function PreviewPanel() {
   const externalPreview = useWikiStore((s) => s.externalPreview)
   const setFileContent = useWikiStore((s) => s.setFileContent)
   const closePreview = useWikiStore((s) => s.closePreview)
+  const previewReturnView = useWikiStore((s) => s.previewReturnView)
+  const { t } = useTranslation()
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Snapshot of what was most recently loaded from disk. Milkdown re-emits
   // `markdownUpdated` on initial parse (before the user types anything),
@@ -110,12 +113,27 @@ export function PreviewPanel() {
         <span className="truncate text-xs text-muted-foreground" title={selectedFile}>
           {fileName}
         </span>
-        <button
-          onClick={closePreview}
-          className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        {previewReturnView ? (
+          // Semantic return: the user arrived here from a task / search /
+          // graph action. A labelled "← Back to <source>" reads as a way
+          // out; a bare X reads as "close" and leaves them stranded.
+          <button
+            onClick={closePreview}
+            className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            title={t("preview.backTo", { source: t(`nav.${previewReturnView}`) })}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {t("preview.backTo", { source: t(`nav.${previewReturnView}`) })}
+          </button>
+        ) : (
+          <button
+            onClick={closePreview}
+            className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent"
+            title={t("common.close")}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       <div className="flex-1 min-w-0 overflow-auto">
         {externalPreview?.path === selectedFile ? (

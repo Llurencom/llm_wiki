@@ -255,6 +255,8 @@
     "emptyProjectImportCta": "Import material",
     "typeAMessage": "Type a message...",
     "useWebSearch": "Web search",
+    "findPages": "Find pages",
+    "findPagesHint": "Search wiki pages and images in the current knowledge base and open them directly",
     "useAnyTxtSearch": "AnyTXT search",
     "skills": "Skills",
     "enabledSkills": "Enabled skills",
@@ -937,6 +939,7 @@
     }
   },
   "preview": {
+    "backTo": "Back to {{source}}",
     "selectFile": "Select a file to preview",
     "notAvailable": "Preview not available for this file type",
     "viewAsText": "View as text",

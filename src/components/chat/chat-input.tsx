@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
-import { BrainCircuit, FileSearch, FileText, Globe2, ImagePlus, Send, Sparkles, Square, X } from "lucide-react"
+import { BrainCircuit, FileSearch, FileText, Globe2, ImagePlus, Search, Send, Sparkles, Square, X } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -149,6 +149,7 @@ interface ChatInputProps {
   onSelectedContextFilesChange: (paths: string[]) => void
   anyTxtAvailable?: boolean
   imageInputAvailable?: boolean
+  onFindPages?: () => void
   placeholder?: string
 }
 
@@ -172,6 +173,7 @@ export function ChatInput({
   onSelectedContextFilesChange,
   anyTxtAvailable = true,
   imageInputAvailable = true,
+  onFindPages,
   placeholder,
 }: ChatInputProps) {
   const { t } = useTranslation()
@@ -706,6 +708,21 @@ export function ChatInput({
                 <span className="hidden sm:inline">{t("chat.attachImage")}</span>
               </button>
             </span>
+            {onFindPages && (
+              // Find pages — a summonable jump into wiki page/image search
+              // from the chat center, so "find a page" and "ask a question"
+              // share one home instead of search hiding under the More menu.
+              <button
+                type="button"
+                onClick={onFindPages}
+                disabled={isStreaming}
+                className={searchToggleClass(false)}
+                title={t("chat.findPagesHint")}
+              >
+                <Search className="h-3.5 w-3.5" />
+                {t("chat.findPages")}
+              </button>
+            )}
             <button
               type="button"
               aria-pressed={useWebSearch}
