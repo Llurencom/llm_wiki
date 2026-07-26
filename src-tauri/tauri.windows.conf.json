@@ -3,6 +3,7 @@
     "windows": [
       {
         "label": "main",
+        "title": "Lluren Wiki",
         "hiddenTitle": false,
         "titleBarStyle": "Visible"
       }
