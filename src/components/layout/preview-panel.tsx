@@ -107,32 +107,51 @@ export function PreviewPanel() {
     ? externalPreview.title
     : getFileName(selectedFile)
 
+  const backLabel = previewReturnView
+    ? t("preview.backTo", { source: t(`nav.${previewReturnView}`) })
+    : ""
+
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b px-3 py-1.5">
-        <span className="truncate text-xs text-muted-foreground" title={selectedFile}>
-          {fileName}
-        </span>
+      <div className="flex items-center gap-2 border-b px-3 py-1.5">
         {previewReturnView ? (
-          // Semantic return: the user arrived here from a task / search /
-          // graph action. A labelled "← Back to <source>" reads as a way
-          // out; a bare X reads as "close" and leaves them stranded.
-          <button
-            onClick={closePreview}
-            className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            title={t("preview.backTo", { source: t(`nav.${previewReturnView}`) })}
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {t("preview.backTo", { source: t(`nav.${previewReturnView}`) })}
-          </button>
+          // Semantic return, made prominent. The user arrived here from a
+          // task / search action and the full-width preview replaced the
+          // list they came from, so the way back must be the first thing
+          // they see: a bordered button on the LEFT (where "back" is
+          // expected), not a faint link tucked in the corner.
+          <>
+            <button
+              onClick={closePreview}
+              className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent"
+              title={backLabel}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {backLabel}
+            </button>
+            <span
+              className="min-w-0 flex-1 truncate text-xs text-muted-foreground"
+              title={selectedFile}
+            >
+              {fileName}
+            </span>
+          </>
         ) : (
-          <button
-            onClick={closePreview}
-            className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent"
-            title={t("common.close")}
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+          <>
+            <span
+              className="min-w-0 flex-1 truncate text-xs text-muted-foreground"
+              title={selectedFile}
+            >
+              {fileName}
+            </span>
+            <button
+              onClick={closePreview}
+              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent"
+              title={t("common.close")}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </>
         )}
       </div>
       <div className="flex-1 min-w-0 overflow-auto">
