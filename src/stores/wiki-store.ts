@@ -397,6 +397,13 @@ interface WikiState {
    */
   pendingScrollImageSrc: string | null
   activeView: "chat" | "wiki" | "sources" | "search" | "graph" | "lint" | "review" | "todos" | "skills" | "settings"
+  /**
+   * One-shot tab preselect for the unified Tasks surface. Set it before
+   * navigating to the `todos` view so the surface opens on the intended
+   * tab (e.g. jumping straight to a fresh quality scan). TodosView reads
+   * it once and clears it. Transient navigation state — never persisted.
+   */
+  todosInitialTab: "review" | "lint" | null
   llmConfig: LlmConfig
   /** Persisted global/default config, kept separate while a project override is effective. */
   globalLlmConfig: LlmConfig
@@ -431,6 +438,7 @@ interface WikiState {
   setExternalPreview: (preview: ExternalPreview | null) => void
   setPendingScrollImageSrc: (src: string | null) => void
   setActiveView: (view: WikiState["activeView"]) => void
+  setTodosInitialTab: (tab: WikiState["todosInitialTab"]) => void
   setLlmConfig: (config: LlmConfig) => void
   setGlobalLlmConfig: (config: LlmConfig) => void
   setProviderConfigs: (configs: ProviderConfigs) => void
@@ -464,6 +472,7 @@ export const useWikiStore = create<WikiState>((set) => ({
   previewReturnView: null,
   pendingScrollImageSrc: null,
   activeView: "wiki",
+  todosInitialTab: null,
   llmConfig: {
     provider: "openai",
     apiKey: "",
@@ -546,6 +555,7 @@ export const useWikiStore = create<WikiState>((set) => ({
   setExternalPreview: (externalPreview) => set({ externalPreview }),
   setPendingScrollImageSrc: (pendingScrollImageSrc) => set({ pendingScrollImageSrc }),
   setActiveView: (activeView) => set({ activeView, previewReturnView: null }),
+  setTodosInitialTab: (todosInitialTab) => set({ todosInitialTab }),
   searchApiConfig: {
     provider: "none",
     apiKey: "",

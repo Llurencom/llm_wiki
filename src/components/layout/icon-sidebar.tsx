@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
-  FileText, FolderOpen, Search, Network, Settings, ArrowLeftRight, ListTodo, Globe, MessageSquare, Sparkles, MoreHorizontal,
+  FileText, FolderOpen, Search, Network, Settings, ArrowLeftRight, ListTodo, Globe, MessageSquare, Sparkles, MoreHorizontal, ShieldCheck,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
@@ -39,6 +39,7 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
   const { t } = useTranslation()
   const activeView = useWikiStore((s) => s.activeView)
   const setActiveView = useWikiStore((s) => s.setActiveView)
+  const setTodosInitialTab = useWikiStore((s) => s.setTodosInitialTab)
   const todoCount = useTodoTotalPending()
   const [moreOpen, setMoreOpen] = useState(false)
   const moreRef = useRef<HTMLDivElement>(null)
@@ -171,6 +172,22 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
                     {t(labelKey)}
                   </button>
                 ))}
+                {/* Scan quality — an intentional action, not a resting view.
+                    The Tasks entry only appears once issues exist, so this
+                    keeps the quality scan reachable on a clean project. It
+                    opens the Tasks surface straight on the lint tab. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTodosInitialTab("lint")
+                    setActiveView("todos")
+                    setMoreOpen(false)
+                  }}
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent/60"
+                >
+                  <ShieldCheck className="h-4 w-4 shrink-0" />
+                  {t("nav.scanQuality")}
+                </button>
               </div>
             )}
           </div>

@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { ClipboardList, ClipboardCheck } from "lucide-react"
 import { ReviewView } from "@/components/review/review-view"
 import { LintView } from "@/components/lint/lint-view"
 import { useReviewPendingCount, useLintPendingCount } from "@/lib/todos"
+import { useWikiStore } from "@/stores/wiki-store"
 
 type TodoTab = "review" | "lint"
 
@@ -15,7 +16,18 @@ type TodoTab = "review" | "lint"
  */
 export function TodosView() {
   const { t } = useTranslation()
-  const [tab, setTab] = useState<TodoTab>("review")
+  // Respect a one-shot tab intent (e.g. "Scan quality" jumps straight to
+  // the lint tab). Read it once, then clear so it doesn't stick on later
+  // visits. Default is the review tab.
+  const todosInitialTab = useWikiStore((s) => s.todosInitialTab)
+  const setTodosInitialTab = useWikiStore((s) => s.setTodosInitialTab)
+  const [tab, setTab] = useState<TodoTab>(todosInitialTab ?? "review")
+  useEffect(() => {
+    if (todosInitialTab) {
+      setTab(todosInitialTab)
+      setTodosInitialTab(null)
+    }
+  }, [todosInitialTab, setTodosInitialTab])
   const reviewCount = useReviewPendingCount()
   const lintCount = useLintPendingCount()
 

@@ -5,7 +5,7 @@ import "@react-sigma/core/lib/style.css"
 import type { NodeHoverDrawingFunction } from "sigma/rendering"
 import type { SigmaNodeEventPayload } from "sigma/types"
 import forceAtlas2 from "graphology-layout-forceatlas2"
-import { Network, RefreshCw, ZoomIn, ZoomOut, Maximize, Layers, Tag, Lightbulb, AlertTriangle, Link2, X, Search, Loader2, Filter, RotateCcw, EyeOff } from "lucide-react"
+import { Network, RefreshCw, ZoomIn, ZoomOut, Maximize, Layers, Tag, Lightbulb, AlertTriangle, Link2, X, Search, Loader2, Filter, RotateCcw, EyeOff, FolderOpen } from "lucide-react"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { useResearchStore } from "@/stores/research-store"
 import { Button } from "@/components/ui/button"
@@ -956,6 +956,19 @@ export function GraphView() {
         <Network className="h-10 w-10 opacity-30" />
         <p className="text-sm">{t("graph.noPages")}</p>
         <p className="text-xs">{t("graph.importSourcesHint")}</p>
+        {/* State-aware empty state: don't dead-end. An empty graph means
+            there's nothing indexed yet, so offer the one action that
+            resolves it — jump to import — instead of leaving the user
+            to hunt for where to add material. */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-1 gap-2"
+          onClick={() => useWikiStore.getState().setActiveView("sources")}
+        >
+          <FolderOpen className="h-4 w-4" />
+          {t("chat.emptyProjectImportCta")}
+        </Button>
       </div>
     )
   }
