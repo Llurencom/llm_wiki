@@ -407,7 +407,7 @@ function App() {
     // Flush the OUTGOING project's review/lint/chat state to disk and suspend
     // auto-save before reset empties the stores — otherwise the debounced
     // writers would persist empty arrays back over the old project's pending
-    // review / deep-research items.
+    // review items.
     const { runWithSuspendedAutoSave } = await import("@/lib/auto-save")
     await runWithSuspendedAutoSave(async () => {
       // Clear all per-project state BEFORE loading new project data

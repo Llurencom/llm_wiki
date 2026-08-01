@@ -27,7 +27,7 @@ export interface ChatSendOptions {
   shellCommand?: string
 }
 
-const AGENT_MODE_OPTIONS: ChatAgentMode[] = ["fast", "standard", "deep", "local_first"]
+const AGENT_MODE_OPTIONS: ChatAgentMode[] = ["fast", "standard", "local_first"]
 const RETRIEVAL_MODE_OPTIONS: ChatRetrievalMode[] = ["standard", "smart", "faithful"]
 
 export interface ChatSkillOption {
@@ -522,8 +522,6 @@ export function ChatInput({
     switch (mode) {
       case "fast":
         return t("chat.agentModes.fast")
-      case "deep":
-        return t("chat.agentModes.deep")
       case "local_first":
         return t("chat.agentModes.localFirst")
       case "standard":

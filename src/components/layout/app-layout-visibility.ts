@@ -1,13 +1,13 @@
 import type { WikiState } from "@/stores/wiki-store"
-import { isStandaloneView } from "./research-panel-nav"
+
+export function isStandaloneView(view: WikiState["activeView"]): boolean {
+  return view === "chat" || view === "skills" || view === "settings"
+}
 
 export function getAppLayoutVisibility(
   activeView: WikiState["activeView"],
-  researchPanelOpen: boolean,
-): { showLeftPanel: boolean; hasRightPanel: boolean } {
-  const isStandalone = isStandaloneView(activeView)
+): { showLeftPanel: boolean } {
   return {
-    showLeftPanel: !isStandalone,
-    hasRightPanel: !isStandalone && researchPanelOpen,
+    showLeftPanel: !isStandaloneView(activeView),
   }
 }

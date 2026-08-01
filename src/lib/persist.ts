@@ -291,7 +291,6 @@ function normalizePersistedAgentMode(value: unknown): ChatAgentMode {
   switch (value) {
     case "fast":
     case "standard":
-    case "deep":
     case "local_first":
       return value
     default:

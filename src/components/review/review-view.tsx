@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from "react"
-import { queueResearch } from "@/lib/deep-research"
 import {
   AlertTriangle,
   Copy,
@@ -18,7 +17,6 @@ import { useWikiStore } from "@/stores/wiki-store"
 import { writeFile, readFile, deleteFile } from "@/commands/fs"
 import { normalizePath } from "@/lib/path-utils"
 import { refreshProjectFileTree } from "@/lib/project-file-tree-refresh"
-import { hasConfiguredDeepResearchSources } from "@/lib/web-search"
 import { makeQueryFileName } from "@/lib/wiki-filename"
 import { createReviewPageDrafts } from "@/lib/review-create-page"
 import { cleanAssistantContentForWikiSave, titleFromCleanAssistantContent } from "@/lib/chat-save-to-wiki"
@@ -65,24 +63,6 @@ export function ReviewView() {
   const handleResolve = useCallback(async (id: string, action: string) => {
     const pp = project ? normalizePath(project.path) : ""
     const item = items.find((i) => i.id === id)
-    // Deep Research — must be checked FIRST before any fuzzy matching
-    if (action === "__deep_research__" && project) {
-      const searchConfig = useWikiStore.getState().searchApiConfig
-      if (!hasConfiguredDeepResearchSources(searchConfig)) {
-        window.alert(t("research.notConfigured"))
-        return
-      }
-      if (item) {
-        const llmConfig = useWikiStore.getState().llmConfig
-        // Use pre-generated search queries if available, otherwise fall back to title
-        const topic = item.title.replace(/^(Save to Wiki|Create|Research)[:\s]*/i, "").trim() || item.description.split("\n")[0]
-        queueResearch(pp, topic, llmConfig, searchConfig, item.searchQueries)
-        resolveItem(id, "Queued for research")
-      } else {
-        resolveItem(id, action)
-      }
-      return
-    }
 
     if (action.startsWith("save:") && project) {
       // Decode and save the content to wiki
@@ -164,24 +144,6 @@ export function ReviewView() {
       } catch (err) {
         console.error("Failed to delete:", err)
         resolveItem(id, "Delete failed")
-      }
-    } else if (actionLooksLikeResearch(action) && project) {
-      // Actions with "research" trigger deep research, not just page creation
-      const searchConfig = useWikiStore.getState().searchApiConfig
-      if (!hasConfiguredDeepResearchSources(searchConfig)) {
-        // No research source — fall through to create a page instead
-        if (item) {
-          handleResolve(id, "__create_page__:" + action)
-        }
-        return
-      }
-      if (item) {
-        const llmConfig = useWikiStore.getState().llmConfig
-        const topic = action.replace(/^research\s*/i, "").trim() || item.description.split("\n")[0]
-        queueResearch(pp, topic, llmConfig, searchConfig)
-        resolveItem(id, "Queued for deep research")
-      } else {
-        resolveItem(id, action)
       }
     } else if (
       (action.startsWith("__create_page__:") || actionLooksLikeCreate(action))
@@ -468,16 +430,6 @@ function ReviewCard({
 
       {!item.resolved ? (
         <div className="flex flex-wrap gap-1.5">
-          {(item.type === "suggestion" || item.type === "missing-page") && (
-            <Button
-              variant="default"
-              size="sm"
-              className="h-7 text-xs gap-1"
-              onClick={() => onResolve(item.id, "__deep_research__")}
-            >
-              🔍 {t("research.title")}
-            </Button>
-          )}
           {item.options.map((opt) => (
             <Button
               key={opt.action}
@@ -497,22 +449,6 @@ function ReviewCard({
         </div>
       )}
     </div>
-  )
-}
-
-/** Detect if an action implies deep research (web search + LLM synthesis) */
-function actionLooksLikeResearch(action: string): boolean {
-  // Skip internal action identifiers
-  if (action.startsWith("__")) return false
-  const lower = action.toLowerCase()
-  return (
-    lower.includes("research") ||
-    lower.includes("investigate") ||
-    lower.includes("explore") ||
-    lower.includes("look into") ||
-    lower.includes("研究") ||
-    lower.includes("调研") ||
-    lower.includes("探索")
   )
 }
 

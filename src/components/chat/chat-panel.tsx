@@ -130,10 +130,8 @@ function commonDirectory(paths: string[]): string | null {
   return firstParts.slice(0, commonLength).join("/") || null
 }
 
-function agentStreamIdleTimeoutMs(options: ChatSendOptions, skillCount: number): number {
-  return skillCount > 0 || options.agentMode === "deep"
-    ? AGENT_SKILL_STREAM_IDLE_TIMEOUT_MS
-    : AGENT_STREAM_IDLE_TIMEOUT_MS
+function agentStreamIdleTimeoutMs(_options: ChatSendOptions, skillCount: number): number {
+  return skillCount > 0 ? AGENT_SKILL_STREAM_IDLE_TIMEOUT_MS : AGENT_STREAM_IDLE_TIMEOUT_MS
 }
 
 function formatDate(timestamp: number): string {
@@ -972,8 +970,8 @@ export function ChatPanel() {
                   web: sendOptions.useWebSearch,
                   anytxt: sendOptions.useAnyTxtSearch,
                 },
-                topK: sendOptions.agentMode === "deep" ? 8 : 5,
-                includeContent: sendOptions.agentMode === "deep",
+                topK: 5,
+                includeContent: false,
                 history: activeConvMessages,
                 historyExplicit: true,
                 skills: requestSkills,
@@ -1049,8 +1047,8 @@ export function ChatPanel() {
               web: sendOptions.useWebSearch,
               anytxt: sendOptions.useAnyTxtSearch,
             },
-            topK: sendOptions.agentMode === "deep" ? 8 : 5,
-            includeContent: sendOptions.agentMode === "deep",
+            topK: 5,
+            includeContent: false,
             skills: requestSkills,
             contextFiles: sendOptions.contextFiles,
             skillMode: requestedSkillMode,

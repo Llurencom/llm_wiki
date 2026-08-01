@@ -329,7 +329,7 @@ describe("chat persistence — round-trip (new format)", () => {
     await saveChatPreferences(tmp.path, {
       useWebSearch: true,
       useAnyTxtSearch: false,
-      agentMode: "deep",
+      agentMode: "standard",
       retrievalMode: "smart",
       selectedSkills: ["reviewer", "illustrator"],
       disabledSkills: ["legacy"],
@@ -337,7 +337,7 @@ describe("chat persistence — round-trip (new format)", () => {
     await expect(loadChatPreferences(tmp.path)).resolves.toEqual({
       useWebSearch: true,
       useAnyTxtSearch: false,
-      agentMode: "deep",
+      agentMode: "standard",
       retrievalMode: "smart",
       selectedSkills: ["reviewer", "illustrator"],
       disabledSkills: ["legacy"],

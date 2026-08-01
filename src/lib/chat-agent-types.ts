@@ -30,7 +30,7 @@ export interface ChatAgentEvent {
   timestamp?: number
 }
 
-export type ChatAgentMode = "fast" | "standard" | "deep" | "local_first"
+export type ChatAgentMode = "fast" | "standard" | "local_first"
 export type ChatRetrievalMode = "standard" | "smart" | "faithful"
 
 export type ChatAgentToolName =

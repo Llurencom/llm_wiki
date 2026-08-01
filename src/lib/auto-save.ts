@@ -12,7 +12,7 @@ let chatTimer: ReturnType<typeof setTimeout> | null = null
 // during a project switch: resetProjectState() clears every store to empty,
 // and without this guard the debounced callbacks would persist those empty
 // arrays back to the OUTGOING project's .llm-wiki/*.json — wiping its pending
-// review / deep-research items. The switch flow flushes real data to disk via
+// review items. The switch flow flushes real data to disk via
 // flushAndSuspendAutoSave() first, then resumes once the new project loads.
 let suspended = false
 

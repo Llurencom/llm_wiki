@@ -5,7 +5,7 @@
  * stores. The auto-save subscriptions are debounced, so without a guard their
  * timers fired AFTER the store was cleared but while project?.path still pointed
  * at the OUTGOING project — persisting empty arrays over that project's pending
- * review / deep-research items. Switching back then loaded an emptied review.json.
+ * review items. Switching back then loaded an emptied review.json.
  *
  * flushAndSuspendAutoSave() must (1) persist the real current state to disk and
  * (2) suspend the subscriptions so the subsequent clear-to-empty does not write.

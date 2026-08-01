@@ -60,7 +60,6 @@ export type SearchProvider =
   | "bocha"
   | "firecrawl"
   | "none"
-export type DeepResearchSource = "web" | "anytxt" | "both"
 export type SerpApiEngine =
   | "google"
   | "google_news"
@@ -112,7 +111,6 @@ interface SearchApiConfig {
   searXngCategories?: SearXngCategory[]
   ollamaUrl?: string
   providerConfigs?: SearchProviderConfigs
-  deepResearchSource?: DeepResearchSource
   anyTxt?: AnyTxtConfig
 }
 
@@ -570,7 +568,6 @@ export const useWikiStore = create<WikiState>((set) => ({
     searXngUrl: "",
     searXngCategories: ["general"],
     providerConfigs: {},
-    deepResearchSource: "web",
     anyTxt: {
       enabled: false,
       endpoint: "http://127.0.0.1:9920",
