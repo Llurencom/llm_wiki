@@ -43,10 +43,10 @@ src/
   - `CORE_ITEMS`：Chat、Sources（常驻）。
   - `MORE_ITEMS`：Search、Wiki、Graph、Skills（"⋯"菜单）。
   - 底部条件项：Tasks（仅当有 review/lint 待办时出现）、Daemon 状态、Settings（有更新时红点）、
-    Switch Project；顶部 Deep Research（Globe）切右侧面板。
+    Switch Project。
 - **PreviewPanel** (`preview-panel.tsx`)：加载/自动保存编排；`previewReturnView` 存在时显示醒目
   「返回 [来源]」按钮（fork）。
-- **ResearchPanel / ActivityPanel**：右侧 Deep Research 任务与实时导入活动日志。
+- **ActivityPanel**：左侧底部实时导入/agent 活动日志。
 
 ## Zustand Stores（`src/stores/`）
 
@@ -74,7 +74,7 @@ sourceWatch/scheduledImport/api/graphUiState 配置，以及 `dataVersion`（切
   持久化 `.llm-wiki/lint.json`。聚合计数见 `lib/todos.ts`（`useTodoTotalPending` 等，驱动侧栏徽标）。
 
 ### 其他 store
-`research-store`（Deep Research 任务队列 + 面板显隐 + 并发上限）、`activity-store`（导入/agent 活动日志）、
+`activity-store`（导入/agent 活动日志）、
 `update-store`（版本检查状态）、`zoom-store`（UI 缩放，持久化）、`file-sync-store`（文件监听状态）。
 
 ## 核心 lib 模块（`src/lib/`，节选）
@@ -87,7 +87,7 @@ sourceWatch/scheduledImport/api/graphUiState 配置，以及 `dataVersion`（切
 | `embedding.ts` / `text-chunker.ts` | 取向量、切块、upsert 到 LanceDB |
 | `llm-client.ts` | 流式对话；处理 token/超时 |
 | `llm-providers.ts` / `llm-task-routing.ts` | 各家 provider 适配；Chat/Ingest 分模型路由 |
-| `web-search.ts` / `deep-research.ts` | Web 搜索 API；多轮检索+综合 |
+| `web-search.ts` | Web 搜索 API（供 Chat 可选联网佐证） |
 | `wiki-graph.ts` / `graph-insights.ts` / `graph-filters.ts` | 建图、洞察、过滤 |
 | `wiki-page-resolver.ts` / `enrich-wikilinks.ts` | wikilink→路径解析（模糊匹配）；LLM 注入链接 |
 | `persist.ts` / `auto-save.ts` / `project-store.ts` | 读写 `.llm-wiki/`；防抖保存；项目配置 |

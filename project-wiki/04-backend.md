@@ -68,7 +68,7 @@
 - `tools.rs`：`BuiltinToolRegistry` 内置工具——`wiki.write_page/search/read_page`、`source.search`、
   `web.search`、`anytxt.search`、`browser.fetch`、`shell.exec`(需审批)、`graph.search`。
   限制：每轮最多 8 次工具迭代、最多 20 条知识项、shell 输出截断。
-- `types.rs`：`AgentChatRequest/Response`、`AgentMode`(fast/standard/deep/local_first)、
+- `types.rs`：`AgentChatRequest/Response`、`AgentMode`(fast/standard/local_first)、
   `AgentRetrievalMode`(standard/smart/faithful)。
 - 其余：`router.rs`(意图路由)、`context.rs`、`skills.rs`、`session.rs`(每项目会话持久化)、
   `cancel.rs`、`workspace.rs`、`events.rs`、`permissions.rs`。

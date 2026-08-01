@@ -53,7 +53,7 @@
 后端 `commands/search.rs`。
 
 - 关键词（分词 + 停用词 + CJK bigram）、向量（需配 embedding 端点）、混合（RRF 融合）。
-- 结果可：打开全宽预览（带返回导航）、跳转到某图片（`pendingScrollImageSrc`）、入队 Deep Research。
+- 结果可：打开全宽预览（带返回导航）、跳转到某图片（`pendingScrollImageSrc`）。
 - Embedding 配置：端点/模型、切块（目标 1000、上限 1500、重叠 200）、并发/批量可调。
 
 ## E. 图谱
@@ -63,7 +63,7 @@
 
 - sigma.js 画布；节点类型（概念/实体/来源/查询/综合/综述）；ForceAtlas2 / Web Worker 布局。
 - **Louvain 社区发现**；按类型或社区着色；过滤、缩放、节点大小调节。
-- **洞察**：惊喜连接（低度节点的 2-hop 路径）、知识缺口（孤立簇），可把缺口入队 Deep Research。
+- **洞察**：惊喜连接（低度节点的 2-hop 路径）、知识缺口（孤立簇）。
 
 ## F. 待办中心（Tasks = Review + Lint，fork 聚合）
 
@@ -74,11 +74,11 @@
 - **Lint**：断链/孤儿页/缺文件引用等；error/warning/info；自动修复或人工；`.llm-wiki/lint.json`。
 - 侧栏 Tasks 图标与徽标仅在有待办时出现（WYSIWYG，见 [06](06-fork-customizations.md)）。
 
-## G. Deep Research（深度研究）
-
-**文件**：`src/lib/deep-research.ts`、`research-store.ts`、`layout/research-panel.tsx`。
-任务队列（queued→searching→synthesizing→saving→done/error），多轮 Web 搜索 + LLM 综合，
-可保存为 wiki 页（`savedPath`）；右侧面板可视化，含并发上限。
+> **已移除**：早期上游版本含"Deep Research（联网深度研究）"功能——下课题、后台联网搜索并综合成
+> wiki 页。本 fork 已**彻底删除**该功能（前端面板/store/lib、Agent 的 `deep_research.run` 工具与
+> `AgentMode::Deep`、项目模板里的研究化脚手架），因为它与 Lluren Wiki 的定位相悖：本平台是**向内**沉淀
+> 你自己的知识/经验/经历/生活的「个人知识分身」，**不做向外的联网研究**（见 [README 平台定位红线](README.md)）。
+> 从上游合并时不要再合回这部分内容。
 
 ## H. 浏览器剪藏（Web Clipper）
 

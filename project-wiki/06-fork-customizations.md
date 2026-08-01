@@ -15,8 +15,7 @@
 **位置**：`src/components/layout/icon-sidebar.tsx`。
 - `CORE_ITEMS`：Chat、Sources（常驻）。
 - `MORE_ITEMS`：Search、Wiki、Graph、Skills（收进"⋯"菜单）。
-- 底部条件项：Tasks（有待办才出现）、Daemon 状态、Settings（有更新红点）、Switch Project；
-  顶部 Deep Research 切右侧面板。
+- 底部条件项：Tasks（有待办才出现）、Daemon 状态、Settings（有更新红点）、Switch Project。
 - **理由**：精简侧栏，主次分明。
 
 ## 2. 统一待办中心（Review + Lint 两 Tab）

@@ -10,6 +10,15 @@ Lluren Wiki 是 [`nashsu/llm_wiki`](https://github.com/nashsu/llm_wiki) 的一�
 **Tauri 2 + React 19** 的跨平台桌面应用，核心理念是让 LLM **增量构建并持续维护**一份结构化、
 互链的个人知识库（wiki），而不是每次查询都从原始文档里临时检索（传统 RAG）。
 
+## 🔴 平台定位红线（第一原则，改动前必读）
+
+> **Lluren Wiki 是「你的个人知识分身」**——一个沉淀并调用**你自己的**知识、经验、经历、生活的平台。
+> 它是**向内**的（把你的私人语料变成可对话、可检索的第二大脑），**不是**一个向外做联网深度研究的工具。
+>
+> **据此的硬约束**：任何"向外扩张/联网研究"性质的功能（如已删除的 Deep Research）**都不属于本平台方向**。
+> 在本项目做任何功能前，先对齐这条定位；从上游 [`nashsu/llm_wiki`](https://github.com/nashsu/llm_wiki)
+> 合并代码时，**不要**把"联网深度研究"这类功能合回来。
+
 ## 📑 页面导航
 
 | 页面 | 内容 |
@@ -43,7 +52,7 @@ Lluren Wiki 是 [`nashsu/llm_wiki`](https://github.com/nashsu/llm_wiki) 的一�
 
 ## 🗂️ 一句话速览
 
-- **界面**：三栏布局（左侧文件/知识树 · 中间视图 · 右侧研究面板），左侧图标栏在
+- **界面**：左侧文件/知识树 · 中间视图（Chat/Wiki/Search/Graph 等），左侧图标栏在
   Core（Chat/Sources）与 More（Search/Wiki/Graph/Skills）两级间切换。
 - **导入（Ingest）**：文档 → 解析 → LLM 分析 → 生成互链 wiki 页面 → 注入 wikilink → 去重 →
   生成 Review 待办。两步式 CoT（先分析后生成），带 SHA256 增量缓存与持久化队列。
