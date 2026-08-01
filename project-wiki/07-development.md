@@ -69,6 +69,11 @@
 
 ## Windows 本地环境小贴士
 
+- **`git pull` 拉到新代码后，务必先 `npm install` 再 `npm run tauri dev`**（在项目根目录，不是
+  `src-tauri`）。上游同步常新增前端依赖（如 v0.6.6 的 `pdfjs-dist`），旧 `node_modules` 缺文件会让
+  Vite 报 `Failed to resolve import "pdfjs-dist/legacy/build/pdf.mjs"` 之类的错——这是依赖没装全，
+  不是代码 bug。若 `npm install` 后仍报错，做一次干净重装：删 `node_modules` 与 `package-lock.json`
+  后重新 `npm install`。
 - `git pull` 因 `Cargo.toml` 的 CRLF/LF 伪改动被挡时：`git checkout -- src-tauri/Cargo.toml` 后再 pull；
   可 `git config core.autocrlf false` 根治。
 - 连 GitHub 443 被干扰时（能 ping 通但连不上）需走代理：
