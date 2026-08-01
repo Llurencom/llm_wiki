@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 pub enum AgentMode {
     Fast,
     Standard,
-    Deep,
     LocalFirst,
 }
 

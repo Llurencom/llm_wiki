@@ -29,7 +29,7 @@ pub struct RouterDecision {
     pub rationale: String,
 }
 
-pub fn route_query(message: &str, mode: AgentMode, tools: &AgentToolOptions) -> RouterDecision {
+pub fn route_query(message: &str, _mode: AgentMode, tools: &AgentToolOptions) -> RouterDecision {
     let lower = message.to_lowercase();
     let trimmed = message.trim();
     let explicit_web = contains_any(
@@ -94,7 +94,7 @@ pub fn route_query(message: &str, mode: AgentMode, tools: &AgentToolOptions) -> 
         should_search_wiki,
         should_hint_web: tools.web,
         should_hint_anytxt: tools.anytxt,
-        should_include_sources: explicit_raw || matches!(mode, AgentMode::Deep),
+        should_include_sources: explicit_raw,
         rationale: match intent {
             QueryIntent::NeedsExternalSearch => {
                 "User appears to request current/external information.".to_string()

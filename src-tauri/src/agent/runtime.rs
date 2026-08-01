@@ -319,14 +319,9 @@ impl AgentRuntime {
             && (matches!(
                 router.intent,
                 super::router::QueryIntent::NeedsExternalSearch
-            ) || planned_has("web.search")
-                || matches!(request.mode, AgentMode::Deep));
+            ) || planned_has("web.search"));
         let should_run_anytxt = request.tools.anytxt
-            && (should_include_sources
-                || planned_has("anytxt.search")
-                || matches!(request.mode, AgentMode::Deep));
-        let deep_research = matches!(request.mode, AgentMode::Deep)
-            && (should_run_web || should_run_anytxt || should_include_sources);
+            && (should_include_sources || planned_has("anytxt.search"));
         let shell_call = if skills.is_empty() {
             None
         } else if let Some(command) = request
@@ -591,24 +586,6 @@ impl AgentRuntime {
             }
         }
 
-        if deep_research {
-            tool_emit_event(
-                &mut tool_events,
-                &mut events,
-                &event_sink,
-                AgentToolEvent {
-                    tool: "deep_research.run".to_string(),
-                    status: "started".to_string(),
-                    detail: Some(message.to_string()),
-                },
-            );
-            emit_event(
-                &mut events,
-                &event_sink,
-                AgentEvent::tool_start("deep_research.run", Some(message.to_string())),
-            );
-        }
-
         if should_search_wiki {
             check_cancel(cancellation.as_ref())?;
             permission_policy.require(AgentCapability::SearchWiki)?;
@@ -710,49 +687,6 @@ impl AgentRuntime {
                         &event_sink,
                         AgentEvent::tool_end("wiki.search", Some(format!("failed: {err}"))),
                     );
-                }
-            }
-            if matches!(request.mode, AgentMode::Deep) && !references.is_empty() {
-                permission_policy.require(AgentCapability::ReadProject)?;
-                let excerpts = references
-                    .iter()
-                    .filter(|reference| reference.kind == "wiki")
-                    .take(2)
-                    .filter_map(|reference| {
-                        tools::read_wiki_page(&self.project_path, &reference.path)
-                            .ok()
-                            .map(|content| {
-                                format!(
-                                    "Excerpt from {}:\n{}",
-                                    reference.path,
-                                    collapse_whitespace(&content)
-                                        .chars()
-                                        .take(2_000)
-                                        .collect::<String>()
-                                )
-                            })
-                    })
-                    .collect::<Vec<_>>();
-                if !excerpts.is_empty() {
-                    tool_emit_event(
-                        &mut tool_events,
-                        &mut events,
-                        &event_sink,
-                        AgentToolEvent {
-                            tool: "wiki.read_page".to_string(),
-                            status: "completed".to_string(),
-                            detail: Some(format!("{} excerpt(s)", excerpts.len())),
-                        },
-                    );
-                    emit_event(
-                        &mut events,
-                        &event_sink,
-                        AgentEvent::tool_end(
-                            "wiki.read_page",
-                            Some(format!("{} excerpt(s)", excerpts.len())),
-                        ),
-                    );
-                    retrieval_parts.push(excerpts.join("\n\n"));
                 }
             }
         } else if request.tools.wiki {
@@ -1118,27 +1052,6 @@ impl AgentRuntime {
                     );
                 }
             }
-        }
-
-        if deep_research {
-            tool_emit_event(
-                &mut tool_events,
-                &mut events,
-                &event_sink,
-                AgentToolEvent {
-                    tool: "deep_research.run".to_string(),
-                    status: "completed".to_string(),
-                    detail: Some(format!("{} reference(s)", references.len())),
-                },
-            );
-            emit_event(
-                &mut events,
-                &event_sink,
-                AgentEvent::tool_end(
-                    "deep_research.run",
-                    Some(format!("{} reference(s)", references.len())),
-                ),
-            );
         }
 
         if retrieval_parts.is_empty() {
@@ -2799,7 +2712,6 @@ fn agent_loop_iteration_budget(mode: AgentMode, has_skills: bool) -> usize {
     let base = match mode {
         AgentMode::Fast => 4,
         AgentMode::Standard | AgentMode::LocalFirst => MAX_AGENT_TOOL_ITERATIONS,
-        AgentMode::Deep => 12,
     };
     if !has_skills {
         return base;
@@ -2807,7 +2719,6 @@ fn agent_loop_iteration_budget(mode: AgentMode, has_skills: bool) -> usize {
     match mode {
         AgentMode::Fast => 8,
         AgentMode::Standard | AgentMode::LocalFirst => 16,
-        AgentMode::Deep => 20,
     }
 }
 
@@ -2820,20 +2731,17 @@ fn agent_loop_retrieval_budget(
         return match mode {
             AgentMode::Fast => 2,
             AgentMode::Standard | AgentMode::LocalFirst => 3,
-            AgentMode::Deep => 5,
         };
     }
     if retrieval_mode == AgentRetrievalMode::Smart {
         return match mode {
             AgentMode::Fast => 3,
             AgentMode::Standard | AgentMode::LocalFirst => 4,
-            AgentMode::Deep => 6,
         };
     }
     let base = match mode {
         AgentMode::Fast => 2,
         AgentMode::Standard | AgentMode::LocalFirst => 4,
-        AgentMode::Deep => 8,
     };
     if has_explicit_skills {
         base + 4
@@ -3149,7 +3057,6 @@ fn is_agent_loop_tool_name(value: &str) -> bool {
             | "workspace.write_file"
             | "workspace.append_file"
             | "shell.exec"
-            | "deep_research.run"
     ) || is_user_ask_tool(value)
 }
 
@@ -3571,10 +3478,6 @@ fn require_tool_permission(
             }
             permission_policy.require(AgentCapability::Network)
         }
-        "deep_research.run" => Err(
-            "deep_research.run is not available in the loop executor; use web.search, anytxt.search, source.search, and wiki.search directly"
-                .to_string(),
-        ),
         "skill.read_file" => permission_policy.require(AgentCapability::ReadProject),
         "shell.exec" => permission_policy.require(AgentCapability::Process),
         other => Err(format!("Unknown Agent tool: {other}")),
@@ -4004,7 +3907,6 @@ fn mode_label(mode: AgentMode) -> &'static str {
     match mode {
         AgentMode::Fast => "fast",
         AgentMode::Standard => "standard",
-        AgentMode::Deep => "deep",
         AgentMode::LocalFirst => "local_first",
     }
 }
@@ -4356,7 +4258,7 @@ mod tests {
             .run_once(AgentChatRequest {
                 message: "原始资料 煤矿安全".to_string(),
                 session_id: None,
-                mode: AgentMode::Deep,
+                mode: AgentMode::Standard,
                 tools: AgentToolOptions::default(),
                 top_k: Some(3),
                 include_content: Some(false),
@@ -4375,45 +4277,6 @@ mod tests {
             .tool_events
             .iter()
             .any(|event| event.tool == "source.search"));
-    }
-
-    #[tokio::test]
-    async fn deep_mode_reads_top_wiki_pages_after_search() {
-        let project = temp_project("deep-read");
-        fs::write(
-            project.join("wiki").join("concepts").join("deep-agent.md"),
-            "---\ntitle: Deep Agent\n---\n# Deep Agent\n\nDetailed evidence that should be read in deep mode.",
-        )
-        .unwrap();
-
-        let runtime = AgentRuntime::new(
-            "project-1",
-            project.to_string_lossy(),
-            None,
-            None,
-            None,
-            None,
-        );
-        let response = runtime
-            .run_once(AgentChatRequest {
-                message: "deep agent evidence".to_string(),
-                session_id: None,
-                mode: AgentMode::Deep,
-                tools: AgentToolOptions::default(),
-                top_k: Some(3),
-                include_content: Some(false),
-                history: Vec::new(),
-                skills: Vec::new(),
-                ..Default::default()
-            })
-            .await
-            .unwrap();
-
-        assert!(response
-            .tool_events
-            .iter()
-            .any(|event| event.tool == "wiki.read_page" && event.status == "completed"));
-        assert!(response.message.contains("Detailed evidence"));
     }
 
     #[tokio::test]
@@ -4629,11 +4492,9 @@ mod tests {
     fn agent_loop_iteration_budget_expands_only_for_skill_turns() {
         assert_eq!(agent_loop_iteration_budget(AgentMode::Fast, false), 4);
         assert_eq!(agent_loop_iteration_budget(AgentMode::Standard, false), 8);
-        assert_eq!(agent_loop_iteration_budget(AgentMode::Deep, false), 12);
         assert_eq!(agent_loop_iteration_budget(AgentMode::Fast, true), 8);
         assert_eq!(agent_loop_iteration_budget(AgentMode::Standard, true), 16);
         assert_eq!(agent_loop_iteration_budget(AgentMode::LocalFirst, true), 16);
-        assert_eq!(agent_loop_iteration_budget(AgentMode::Deep, true), 20);
     }
 
     #[test]
@@ -4651,24 +4512,12 @@ mod tests {
             4
         );
         assert_eq!(
-            agent_loop_retrieval_budget(AgentMode::Deep, AgentRetrievalMode::Standard, false),
-            8
-        );
-        assert_eq!(
             agent_loop_retrieval_budget(AgentMode::Standard, AgentRetrievalMode::Standard, true),
             8
         );
         assert_eq!(
-            agent_loop_retrieval_budget(AgentMode::Deep, AgentRetrievalMode::Standard, true),
-            12
-        );
-        assert_eq!(
             agent_loop_retrieval_budget(AgentMode::Standard, AgentRetrievalMode::Smart, false),
             4
-        );
-        assert_eq!(
-            agent_loop_retrieval_budget(AgentMode::Deep, AgentRetrievalMode::Smart, true),
-            6
         );
         assert_eq!(
             agent_loop_retrieval_budget(AgentMode::Standard, AgentRetrievalMode::Faithful, true),

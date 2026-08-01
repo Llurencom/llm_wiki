@@ -252,14 +252,6 @@ impl ToolRegistry for BuiltinToolRegistry {
                     )
                     .map_err(|err| format!("Failed to serialize anytxt.search result: {err}"))
                 }
-                "deep_research.run" => {
-                    let query = tool_query(&input, "deep_research.run")?;
-                    serde_json::to_value(json!({
-                        "query": query,
-                        "status": "orchestrated_by_agent_runtime",
-                    }))
-                    .map_err(|err| format!("Failed to serialize deep_research.run result: {err}"))
-                }
                 "shell.exec" => {
                     let command = input
                         .get("command")
@@ -496,24 +488,6 @@ pub fn builtin_tool_specs() -> Vec<ToolSpec> {
                 "properties": {
                     "query": { "type": "string" },
                     "topK": { "type": "integer", "minimum": 1, "maximum": 10 }
-                },
-                "required": ["query"]
-            })),
-        },
-        ToolSpec {
-            name: "deep_research.run".to_string(),
-            description:
-                "Collect broader external/local evidence for deep research turns before synthesis."
-                    .to_string(),
-            effects: vec![ToolEffect::Network, ToolEffect::Read],
-            parameters: Some(serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "query": { "type": "string" },
-                    "sources": {
-                        "type": "array",
-                        "items": { "enum": ["web", "anytxt", "wiki", "source"] }
-                    }
                 },
                 "required": ["query"]
             })),
@@ -2853,7 +2827,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn registry_executes_declared_read_page_and_deep_tools() {
+    async fn registry_executes_declared_read_page_tool() {
         let root = std::env::temp_dir().join(format!("llm-wiki-tool-registry-{}", Uuid::new_v4()));
         fs::create_dir_all(root.join("wiki").join("concepts")).unwrap();
         fs::write(root.join("wiki/concepts/a.md"), "# A\n\nBody").unwrap();
@@ -2869,18 +2843,13 @@ mod tests {
             .execute(
                 "wiki.read_page",
                 json!({ "path": "wiki/concepts/a.md" }),
-                context.clone(),
+                context,
             )
             .await
             .unwrap();
         assert_eq!(read["path"], "wiki/concepts/a.md");
         assert!(read["content"].as_str().unwrap().contains("Body"));
 
-        let deep = registry
-            .execute("deep_research.run", json!({ "query": "topic" }), context)
-            .await
-            .unwrap();
-        assert_eq!(deep["status"], "orchestrated_by_agent_runtime");
         let _ = fs::remove_dir_all(root);
     }
 

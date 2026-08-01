@@ -9,7 +9,6 @@ pub enum AgentCapability {
     SearchWeb,
     SearchAnyTxt,
     WriteWiki,
-    RunDeepResearch,
     Network,
     Process,
 }
