@@ -97,30 +97,6 @@
     "frontmatter": { "origin": "Origin", "more": "More" },
     "rawMarkdownEditor": "Raw Markdown editor"
   },
-  "research": {
-    "title": "Deep Research",
-    "notConfigured": "Deep Research sources are not configured. Go to Settings → External Information Sources to configure Web Search or AnyTXT.",
-    "activeBadge": "{{running}} active{{queued, plural, =0 {} other {, {{queued}} queued}}}",
-    "inputPlaceholder": "Enter a research topic...",
-    "emptyTitle": "No research tasks yet",
-    "emptyHint": "Enter a topic above or click Deep Research in Review",
-    "sourcesCount": "Sources ({{count}})",
-    "anyTxtSource": "AnyTXT source",
-    "webSource": "Web source",
-    "synthesis": "Synthesis",
-    "thinking": "Thinking",
-    "open": "Open",
-    "remove": "Remove",
-    "status": {
-      "queued": "Queued",
-      "searching": "Searching sources...",
-      "synthesizing": "Synthesizing...",
-      "saving": "Saving to wiki...",
-      "saved": "Saved",
-      "done": "Done",
-      "failed": "Failed"
-    }
-  },
   "project": {
     "createTitle": "Create New Wiki Project",
     "name": "Project Name",
@@ -137,14 +113,10 @@
     "requiredMarker": "*",
     "browse": "Select Parent Directory",
     "aiOutputLanguage": "AI Output Language",
-    "aiOutputLanguageHint": "All AI-generated content (wiki pages, chat replies, research output) will use this language. You can change it later in Settings → Output.",
+    "aiOutputLanguageHint": "All AI-generated content (wiki pages, chat replies) will use this language. You can change it later in Settings → Output.",
     "pickLanguage": "Pick a language…"
   },
   "templates": {
-    "research": {
-      "name": "Research",
-      "description": "Deep-dive research with hypothesis tracking and methodology notes"
-    },
     "reading": {
       "name": "Reading",
       "description": "Track a book's characters, themes, plot threads, and chapter notes"
@@ -283,7 +255,6 @@
     "agentModes": {
       "fast": "Fast",
       "standard": "Standard",
-      "deep": "Deep",
       "localFirst": "Local first"
     },
     "enableAnyTxtInSettings": "Enable AnyTXT in Settings → External Information Sources",
@@ -660,21 +631,16 @@
       "webSearch": {
         "title": "External Information Sources",
         "description": "Configure external information sources that LLM Wiki can use.",
-        "deepResearchSources": "Deep Research source mode",
-        "deepResearchSourcesHint": "Web Search uses the selected online provider. AnyTXT searches local indexed files through ATGUI.exe on this machine.",
-        "sourceWeb": "Web Search",
-        "sourceAnyTxt": "AnyTXT",
-        "sourceBoth": "Both",
         "webProviders": "Web Search providers",
         "anyTxtTitle": "AnyTXT local file search",
-        "anyTxtDescription": "Use AnyTXT's local JSON-RPC API as a Deep Research source. Keep ATGUI.exe running before starting research.",
+        "anyTxtDescription": "Use AnyTXT's local JSON-RPC API as a search source. Keep ATGUI.exe running to enable local file search.",
         "anyTxtEndpoint": "AnyTXT endpoint",
         "anyTxtFilterDir": "Search folder",
         "anyTxtFilterDirPlaceholder": "Leave blank for AnyTXT's default scope; on Windows, set a drive or folder if needed",
         "anyTxtFilterExt": "Extension filter",
         "anyTxtLimit": "Max local results",
         "anyTxtHint": "AnyTXT pattern text is sent directly to AnyTXT, so its native search syntax applies. AnyTXT API is local beta software; respect AnyTXT's usage terms.",
-        "anyTxtBroadDirWarning": "This folder looks very broad. Deep Research may send matching local file fragments, including sensitive content, to the selected LLM.",
+        "anyTxtBroadDirWarning": "This folder looks very broad. Local file search may send matching file fragments, including sensitive content, to the selected LLM.",
         "expand": "Expand",
         "collapse": "Collapse",
         "activate": "Activate",
@@ -821,7 +787,7 @@
         "title": "Output Preferences",
         "description": "Controls for generated content — language, conversation history length.",
         "aiLanguage": "AI Output Language",
-        "aiLanguageHint": "Force AI-generated content (chat replies, wiki pages, research output, lint reports) to use the selected language. Pick \"Auto\" to let the AI follow the user's input or source document language.",
+        "aiLanguageHint": "Force AI-generated content (chat replies, wiki pages, lint reports) to use the selected language. Pick \"Auto\" to let the AI follow the user's input or source document language.",
         "historyLength": "Conversation History Length",
         "historyHint": "Number of prior messages sent to the AI on each request. More = richer context but more tokens.",
         "historyCurrent": "Currently {{count}} messages (about {{turns}} turns)"
@@ -1055,12 +1021,6 @@
     "cluster": "Cluster {{id}}",
     "surprisingConnections": "Surprising Connections",
     "knowledgeGaps": "Knowledge Gaps",
-    "deepResearch": "Deep Research",
-    "generatingTopic": "Generating research topic...",
-    "researchTopic": "Research Topic",
-    "searchQueries": "Search Queries",
-    "cancel": "Cancel",
-    "startResearch": "Start Research",
     "nodeTypeLabels": {
       "entity": "Entity",
       "concept": "Concept",

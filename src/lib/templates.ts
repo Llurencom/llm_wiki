@@ -66,126 +66,6 @@ const BASE_CONTRADICTION = `When sources contradict each other:
 3. Link both sources from the query page
 4. Resolve in a synthesis page once sufficient evidence exists`
 
-const researchTemplate: WikiTemplate = {
-  id: "research",
-  name: "Research",
-  description: "Deep-dive research with hypothesis tracking and methodology notes",
-  icon: "🔬",
-  extraDirs: ["wiki/methodology", "wiki/findings", "wiki/thesis"],
-  schema: `# Wiki Schema — Research Deep-Dive
-
-## Page Types
-
-| Type | Directory | Purpose |
-|------|-----------|---------|
-${BASE_SCHEMA_TYPES}
-| thesis | wiki/thesis/ | Working hypothesis and its evolution over time |
-| methodology | wiki/methodology/ | Research methods, protocols, and study designs |
-| finding | wiki/findings/ | Individual empirical results or observations |
-
-## Naming Conventions
-
-${BASE_NAMING}
-- Theses: hypothesis as slug (e.g., \`scaling-improves-reasoning.md\`)
-- Methodologies: method name (e.g., \`systematic-review.md\`, \`ablation-study.md\`)
-- Findings: descriptive slug (e.g., \`larger-models-better-few-shot.md\`)
-
-## Frontmatter
-
-${BASE_FRONTMATTER}
-
-Thesis pages also include:
-\`\`\`yaml
-confidence: low | medium | high
-status: speculative | supported | refuted | settled
-\`\`\`
-
-Finding pages also include:
-\`\`\`yaml
-source: "[[source-slug]]"
-confidence: low | medium | high
-replicated: true | false | null
-\`\`\`
-
-## Index Format
-
-${BASE_INDEX_FORMAT}
-
-## Log Format
-
-${BASE_LOG_FORMAT}
-
-## Cross-referencing Rules
-
-${BASE_CROSSREF}
-- Findings link back to their source via the \`source:\` frontmatter field
-- Thesis pages reference supporting and refuting findings via \`related:\`
-- Methodology pages are cited by the findings that used them
-
-## Contradiction Handling
-
-${BASE_CONTRADICTION}
-
-## Research-Specific Conventions
-
-- Keep the thesis pages updated as evidence accumulates — they are living documents
-- Every finding should assess replication status when known
-- Methodology pages explain the *why* (rationale) not just the *how*
-- Distinguish between direct evidence and inference in finding pages
-`,
-  purpose: `# Project Purpose — Research Deep-Dive
-
-## Research Question
-
-<!-- State the central question this research aims to answer. Be specific and falsifiable. -->
-
->
-
-## Hypothesis / Working Thesis
-
-<!-- Your current best guess. This will evolve — update it as evidence accumulates. -->
-
->
-
-## Background
-
-<!-- What prior work or context motivates this research? What gap does it fill? -->
-
-## Sub-questions
-
-<!-- Break down the main question into tractable sub-questions. -->
-
-1.
-2.
-3.
-4.
-
-## Scope
-
-**In scope:**
--
-
-**Out of scope:**
--
-
-## Methodology
-
-<!-- How will you investigate this? What types of sources or experiments are relevant? -->
-
--
-
-## Success Criteria
-
-<!-- How will you know when you have a satisfying answer? -->
-
--
-
-## Current Status
-
-> Not started — update this section as research progresses.
-`,
-}
-
 const readingTemplate: WikiTemplate = {
   id: "reading",
   name: "Reading",
@@ -638,7 +518,6 @@ ${BASE_CONTRADICTION}
 }
 
 export const templates: WikiTemplate[] = [
-  researchTemplate,
   readingTemplate,
   personalTemplate,
   businessTemplate,

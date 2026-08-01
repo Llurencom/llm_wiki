@@ -97,30 +97,6 @@
     "frontmatter": { "origin": "来源", "more": "更多" },
     "rawMarkdownEditor": "Markdown 源码编辑器"
   },
-  "research": {
-    "title": "深度研究",
-    "notConfigured": "深度研究信息来源尚未配置。请到设置 → 外部信息源中配置网页搜索或 AnyTXT。",
-    "activeBadge": "{{running}} 个运行中{{queued, plural, =0 {} other {，{{queued}} 个排队中}}}",
-    "inputPlaceholder": "输入研究主题...",
-    "emptyTitle": "还没有研究任务",
-    "emptyHint": "在上方输入主题，或在待审阅中点击深度研究",
-    "sourcesCount": "来源（{{count}}）",
-    "anyTxtSource": "AnyTXT 来源",
-    "webSource": "网页来源",
-    "synthesis": "综合结果",
-    "thinking": "思考中",
-    "open": "打开",
-    "remove": "移除",
-    "status": {
-      "queued": "排队中",
-      "searching": "正在搜索来源...",
-      "synthesizing": "正在综合...",
-      "saving": "正在保存到 Wiki...",
-      "saved": "已保存",
-      "done": "已完成",
-      "failed": "失败"
-    }
-  },
   "project": {
     "createTitle": "新建 Wiki 项目",
     "name": "项目名称",
@@ -137,14 +113,10 @@
     "requiredMarker": "*",
     "browse": "选择父目录",
     "aiOutputLanguage": "AI 输出语言",
-    "aiOutputLanguageHint": "所有 AI 生成的内容（Wiki 页面、聊天回复、Research 结果）都将使用此语言。您可以在设置 → 输出 中稍后更改。",
+    "aiOutputLanguageHint": "所有 AI 生成的内容（Wiki 页面、聊天回复）都将使用此语言。您可以在设置 → 输出 中稍后更改。",
     "pickLanguage": "选择语言..."
   },
   "templates": {
-    "research": {
-      "name": "研究",
-      "description": "用于深度研究，包含假设跟踪和方法论记录"
-    },
     "reading": {
       "name": "阅读",
       "description": "跟踪书籍的人物、主题、情节线和章节笔记"
@@ -283,7 +255,6 @@
     "agentModes": {
       "fast": "快速",
       "standard": "标准",
-      "deep": "深度",
       "localFirst": "本地优先"
     },
     "enableAnyTxtInSettings": "请在设置 → 外部信息源中启用 AnyTXT",
@@ -660,21 +631,16 @@
       "webSearch": {
         "title": "外部信息源",
         "description": "配置 LLM Wiki 可以使用的外部信息来源。",
-        "deepResearchSources": "深度研究来源模式",
-        "deepResearchSourcesHint": "网页搜索使用当前选中的在线搜索 Provider。AnyTXT 会通过本机 ATGUI.exe 的本地索引搜索文件内容。",
-        "sourceWeb": "网页搜索",
-        "sourceAnyTxt": "AnyTXT",
-        "sourceBoth": "两者都用",
         "webProviders": "网页搜索 Provider",
         "anyTxtTitle": "AnyTXT 本地文件搜索",
-        "anyTxtDescription": "把 AnyTXT 的本地 JSON-RPC API 作为 Deep Research 的信息来源。开始研究前请保持 ATGUI.exe 运行。",
+        "anyTxtDescription": "把 AnyTXT 的本地 JSON-RPC API 作为搜索来源。请保持 ATGUI.exe 运行以启用本地文件搜索。",
         "anyTxtEndpoint": "AnyTXT 端点",
         "anyTxtFilterDir": "搜索文件夹",
         "anyTxtFilterDirPlaceholder": "留空则使用 AnyTXT 默认范围；Windows 如需其他盘符请指定盘符或文件夹",
         "anyTxtFilterExt": "扩展名过滤",
         "anyTxtLimit": "最多本地结果数",
         "anyTxtHint": "AnyTXT pattern 会直接传给 AnyTXT，因此会使用 AnyTXT 自己的搜索语法。AnyTXT API 是本地 Beta 能力，请遵守 AnyTXT 的使用条款。",
-        "anyTxtBroadDirWarning": "这个目录范围很大。Deep Research 可能会把匹配到的本地文件片段（包括敏感内容）发送给当前选择的 LLM。",
+        "anyTxtBroadDirWarning": "这个目录范围很大。本地文件搜索可能会把匹配到的本地文件片段（包括敏感内容）发送给当前选择的 LLM。",
         "expand": "展开",
         "collapse": "收起",
         "activate": "启用",
@@ -821,7 +787,7 @@
         "title": "输出偏好",
         "description": "影响生成内容的语言、对话历史长度等参数。",
         "aiLanguage": "AI 输出语言",
-        "aiLanguageHint": "强制 AI 生成内容（chat 回复、wiki 页面、research 结果、lint 报告）使用指定语言。选 \"Auto\" 让 AI 跟随用户输入或源文档的语言。",
+        "aiLanguageHint": "强制 AI 生成内容（chat 回复、wiki 页面、lint 报告）使用指定语言。选 \"Auto\" 让 AI 跟随用户输入或源文档的语言。",
         "historyLength": "对话历史长度",
         "historyHint": "每次请求发给 AI 的历史消息条数。多 = 上下文更完整但更费 token。",
         "historyCurrent": "当前 {{count}} 条消息（约 {{turns}} 轮对话）"
@@ -1055,12 +1021,6 @@
     "cluster": "簇 {{id}}",
     "surprisingConnections": "意外连接",
     "knowledgeGaps": "知识缺口",
-    "deepResearch": "深度研究",
-    "generatingTopic": "正在生成研究主题...",
-    "researchTopic": "研究主题",
-    "searchQueries": "搜索查询",
-    "cancel": "取消",
-    "startResearch": "开始研究",
     "nodeTypeLabels": {
       "entity": "实体",
       "concept": "概念",

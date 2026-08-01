@@ -93,7 +93,7 @@ venue: ""
 
 ## Log Format
 
-`wiki/log.md` records research activity in reverse chronological order:
+`wiki/log.md` records activity in reverse chronological order:
 ```
 ## YYYY-MM-DD
 
@@ -127,7 +127,7 @@ When sources contradict each other:
 
 ## Key Questions
 
-<!-- List the primary questions driving this research -->
+<!-- List the primary questions driving this project -->
 
 1.
 2.
@@ -143,9 +143,9 @@ When sources contradict each other:
 **Out of scope:**
 -
 
-## Thesis
+## Summary
 
-<!-- Your current working hypothesis or conclusion (update as research progresses) -->
+<!-- Your current understanding or takeaways (update as your knowledge grows) -->
 
 > TBD
 "#;
@@ -170,7 +170,7 @@ When sources contradict each other:
 
     // wiki/log.md
     let log_content = format!(
-        r#"# Research Log
+        r#"# Activity Log
 
 ## {today}
 
