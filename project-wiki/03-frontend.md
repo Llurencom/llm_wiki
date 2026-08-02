@@ -40,12 +40,15 @@ src/
 - **AppLayout** (`app-layout.tsx`)：三栏可拖拽布局；据 `activeView` 由
   `app-layout-visibility.ts` 决定左右面板显隐（Settings/Chat 隐藏左右；Sources 隐藏右）。
 - **IconSidebar** (`icon-sidebar.tsx`)：竖向导航，**两级**（fork 定制）：
-  - `CORE_ITEMS`：Chat、Sources（常驻）。
-  - `MORE_ITEMS`：Search、Wiki、Graph、Skills（"⋯"菜单）。
+  - `CORE_ITEMS`：**对话 Chat、知识库 Wiki**（常驻；知识库是核心成果，与对话并列为两个一等入口）。
+  - `MORE_ITEMS`：**文件 Sources、Search、Graph、Skills**（"⋯"菜单）+ 扫描质量（直达 Lint）。
   - 底部条件项：Tasks（仅当有 review/lint 待办时出现）、Daemon 状态、Settings（有更新时红点）、
     Switch Project。
+- **SidebarPanel** (`sidebar-panel.tsx`)：左侧目录面板，**按 `activeView` 驱动**（已去掉旧的
+  "知识+文件"混合双 Tab）——知识库及知识语境视图显 `KnowledgeTree`，文件(sources)显 `FileTree`。
 - **PreviewPanel** (`preview-panel.tsx`)：加载/自动保存编排；`previewReturnView` 存在时显示醒目
-  「返回 [来源]」按钮（fork）。
+  「返回 [来源]」按钮（fork）。**header 始终渲染**（无选中文件时不早退，空态降为 body），并常驻
+  「搜索页面」按钮（`setActiveView("search")`，fork；见 [06 §4](06-fork-customizations.md)）。
 - **ActivityPanel**：左侧底部实时导入/agent 活动日志。
 
 ## Zustand Stores（`src/stores/`）

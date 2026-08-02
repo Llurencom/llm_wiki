@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
-  FileText, FolderOpen, Search, Network, Settings, ArrowLeftRight, ListTodo, MessageSquare, Sparkles, MoreHorizontal, ShieldCheck,
+  FileText, FolderOpen, Search, Network, Settings, ArrowLeftRight, ListTodo, MessageSquare, Sparkles, MoreHorizontal, ShieldCheck, BookOpen,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
@@ -13,15 +13,20 @@ import type { WikiState } from "@/stores/wiki-store"
 type NavView = WikiState["activeView"]
 
 // Core layer — always present because any moment may need them.
+// 知识库 is the user's accumulated "knowledge avatar" and sits beside
+// 对话 (Chat) as the two first-class surfaces; both core-business
+// (accumulate via chat / use via chat) and the knowledge base itself
+// are one click away.
 const CORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
   { view: "chat", icon: MessageSquare, labelKey: "nav.chat" },
-  { view: "sources", icon: FolderOpen, labelKey: "nav.sources" },
+  { view: "wiki", icon: BookOpen, labelKey: "nav.wiki" },
 ]
 
-// Secondary layer — reachable on demand from the "More" menu.
+// Secondary layer — reachable on demand from the "More" menu. These are
+// non-core helpers: 文件 (import/raw files), 搜索, 关系图, Skills.
 const MORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
+  { view: "sources", icon: FolderOpen, labelKey: "nav.sources" },
   { view: "search", icon: Search, labelKey: "nav.search" },
-  { view: "wiki", icon: FileText, labelKey: "nav.wiki" },
   { view: "graph", icon: Network, labelKey: "nav.graph" },
   { view: "skills", icon: Sparkles, labelKey: "nav.skills" },
 ]

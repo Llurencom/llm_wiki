@@ -30,11 +30,14 @@
 **文件**：`src/components/chat/*`、`src/lib/llm-*.ts`、`web-search.ts`；Agent 在 Rust 侧。
 
 - 多会话线程、流式、markdown 渲染、引用页 `references[]`、Agent 步骤与文件改动展示、视觉输入
-  （PNG/JPEG/WebP/GIF ≤20MB，每条≤5 张，需视觉模型）。
-- 开关：**Web 搜索**、**AnyTxt**（本地外部索引）、**Skills**。
-- **Agent 模式**：standard / fast / deep / local_first。
+  （PNG/JPEG/WebP/GIF ≤20MB，每条≤5 张，需视觉模型；**仅粘贴**，无显式附件按钮）。
+- 工具栏开关（本 fork 精简后）：**Skills**、**检索模式**、**Agent 模式**。
+  （Web 搜索 / AnyTxt / 添加图片按钮已从 Chat 移除，见 [06 §4b](06-fork-customizations.md)；
+  `useWebSearch`/`useAnyTxtSearch` 仍存在于 store 与 send 管道，默认 false。）
+- **Agent 模式**：standard / fast / local_first。
 - **检索模式**：standard（关键词+向量 RRF）/ smart（重排）/ faithful（高精度严格引用）。
-- **fork 定制**：输入栏「🔍 查找页面」按钮，直接 `setActiveView("search")`（见 [06](06-fork-customizations.md)）。
+- **搜索页面入口**：已从 Chat 迁移到 **wiki 预览面板 header**（`PreviewPanel` 常驻「搜索页面」按钮，
+  点击 `setActiveView("search")`，见 [06 §4](06-fork-customizations.md)）。
 - LLM 传输：`llm-client.ts` 流式；支持 HTTP 各家 + Claude/Codex CLI + OpenAI 兼容/Anthropic wire。
 
 ## C. Wiki 预览 / 编辑

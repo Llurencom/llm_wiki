@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
-import { BrainCircuit, ChevronDown, FileSearch, FileText, Globe2, ImagePlus, Search, Send, Sparkles, Square, X } from "lucide-react"
+import { BrainCircuit, ChevronDown, FileText, Send, Sparkles, Square, X } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { isImeComposing } from "@/lib/keyboard-utils"
 import type { MessageImage } from "@/stores/chat-store"
 import type { ChatAgentMode, ChatRetrievalMode } from "@/lib/chat-agent-types"
@@ -141,7 +140,6 @@ interface ChatInputProps {
   selectedSkills: string[]
   availableContextFiles: string[]
   selectedContextFiles: string[]
-  onUseWebSearchChange: (enabled: boolean) => void
   onUseAnyTxtSearchChange: (enabled: boolean) => void
   onAgentModeChange: (mode: ChatAgentMode) => void
   onRetrievalModeChange: (mode: ChatRetrievalMode) => void
@@ -149,7 +147,6 @@ interface ChatInputProps {
   onSelectedContextFilesChange: (paths: string[]) => void
   anyTxtAvailable?: boolean
   imageInputAvailable?: boolean
-  onFindPages?: () => void
   placeholder?: string
 }
 
@@ -165,7 +162,6 @@ export function ChatInput({
   selectedSkills,
   availableContextFiles,
   selectedContextFiles,
-  onUseWebSearchChange,
   onUseAnyTxtSearchChange,
   onAgentModeChange,
   onRetrievalModeChange,
@@ -173,7 +169,6 @@ export function ChatInput({
   onSelectedContextFilesChange,
   anyTxtAvailable = true,
   imageInputAvailable = true,
-  onFindPages,
   placeholder,
 }: ChatInputProps) {
   const { t } = useTranslation()
@@ -188,7 +183,6 @@ export function ChatInput({
   const [dismissedContextKey, setDismissedContextKey] = useState<string | null>(null)
   const inputFrameRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const skillSourceLabel = useCallback(
     (source: string) => t(`chat.skillSources.${source}`, { defaultValue: source }),
@@ -325,16 +319,6 @@ export function ChatInput({
         e.preventDefault()
         void addFiles(files)
       }
-    },
-    [addFiles],
-  )
-
-  const handleFilePick = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files ? Array.from(e.target.files) : []
-      void addFiles(files)
-      // Reset so picking the same file again still fires onChange.
-      e.target.value = ""
     },
     [addFiles],
   )
@@ -682,90 +666,8 @@ export function ChatInput({
             </div>
           </div>
         )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/gif"
-          multiple
-          className="hidden"
-          onChange={handleFilePick}
-        />
         <div className="mt-1 flex items-center justify-between gap-3 border-t border-border/50 pt-2">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            <span
-              className="inline-flex"
-              title={!imageInputAvailable ? t("chat.imageInputUnavailable") : t("chat.attachImage")}
-            >
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isStreaming || !imageInputAvailable || images.length >= MAX_IMAGES_PER_MESSAGE}
-                className={searchToggleClass(false)}
-              >
-                <ImagePlus className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t("chat.attachImage")}</span>
-              </button>
-            </span>
-            {onFindPages && (
-              // Find pages — a summonable jump into wiki page/image search
-              // from the chat center, so "find a page" and "ask a question"
-              // share one home instead of search hiding under the More menu.
-              <button
-                type="button"
-                onClick={onFindPages}
-                disabled={isStreaming}
-                className={searchToggleClass(false)}
-                title={t("chat.findPagesHint")}
-              >
-                <Search className="h-3.5 w-3.5" />
-                {t("chat.findPages")}
-              </button>
-            )}
-            <button
-              type="button"
-              aria-pressed={useWebSearch}
-              onClick={() => onUseWebSearchChange(!useWebSearch)}
-              disabled={isStreaming}
-              className={searchToggleClass(useWebSearch)}
-            >
-              <Globe2 className="h-3.5 w-3.5" />
-              {t("chat.useWebSearch")}
-              <span
-                className={`ml-0.5 h-1.5 w-1.5 rounded-full ${
-                  useWebSearch ? "bg-emerald-500" : "bg-muted-foreground/30"
-                }`}
-              />
-            </button>
-            <TooltipProvider delay={0}>
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <span className="inline-flex" />
-                  }
-                >
-                  <button
-                    type="button"
-                    aria-pressed={useAnyTxtSearch}
-                    onClick={() => onUseAnyTxtSearchChange(!useAnyTxtSearch)}
-                    disabled={isStreaming || !anyTxtAvailable}
-                    className={searchToggleClass(useAnyTxtSearch)}
-                  >
-                    <FileSearch className="h-3.5 w-3.5" />
-                    {t("chat.useAnyTxtSearch")}
-                    <span
-                      className={`ml-0.5 h-1.5 w-1.5 rounded-full ${
-                        useAnyTxtSearch ? "bg-emerald-500" : "bg-muted-foreground/30"
-                      }`}
-                    />
-                  </button>
-                </TooltipTrigger>
-                {!anyTxtAvailable && (
-                  <TooltipContent side="top" className="max-w-64 whitespace-normal leading-relaxed">
-                    {t("chat.enableAnyTxtInSettings")}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
             <div className="relative">
               <button
                 type="button"

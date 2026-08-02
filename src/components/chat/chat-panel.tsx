@@ -448,7 +448,6 @@ export function ChatPanel() {
   const selectedSkills = useChatStore((s) => s.selectedSkills)
   const selectedContextFiles = useChatStore((s) => s.selectedContextFiles)
   const disabledSkills = useChatStore((s) => s.disabledSkills)
-  const setUseWebSearch = useChatStore((s) => s.setUseWebSearch)
   const setUseAnyTxtSearch = useChatStore((s) => s.setUseAnyTxtSearch)
   const setAgentMode = useChatStore((s) => s.setAgentMode)
   const setRetrievalMode = useChatStore((s) => s.setRetrievalMode)
@@ -1475,7 +1474,6 @@ export function ChatPanel() {
           selectedSkills={selectedSkills}
           availableContextFiles={availableContextFiles}
           selectedContextFiles={selectedContextFiles}
-          onUseWebSearchChange={setUseWebSearch}
           onUseAnyTxtSearchChange={setUseAnyTxtSearch}
           onAgentModeChange={setAgentMode}
           onRetrievalModeChange={setRetrievalMode}
@@ -1483,7 +1481,6 @@ export function ChatPanel() {
           onSelectedContextFilesChange={setSelectedContextFiles}
           anyTxtAvailable={anyTxtAvailable}
           imageInputAvailable={imageInputAvailable}
-          onFindPages={() => useWikiStore.getState().setActiveView("search")}
           placeholder={
             mode === "ingest"
               ? t("chat.ingestPlaceholder")

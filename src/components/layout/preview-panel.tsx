@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from "react"
-import { X, ArrowLeft } from "lucide-react"
+import { X, ArrowLeft, Search } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useWikiStore } from "@/stores/wiki-store"
 import { readFile, writeFile } from "@/commands/fs"
@@ -94,18 +94,14 @@ export function PreviewPanel() {
     }
   }, [])
 
-  if (!selectedFile) {
-    return (
-      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-        Select a file to preview
-      </div>
-    )
-  }
+  const category = selectedFile ? getFileCategory(selectedFile) : "other"
+  const fileName = selectedFile
+    ? externalPreview?.path === selectedFile
+      ? externalPreview.title
+      : getFileName(selectedFile)
+    : ""
 
-  const category = getFileCategory(selectedFile)
-  const fileName = externalPreview?.path === selectedFile
-    ? externalPreview.title
-    : getFileName(selectedFile)
+  const openSearch = () => useWikiStore.getState().setActiveView("search")
 
   const backLabel = previewReturnView
     ? t("preview.backTo", { source: t(`nav.${previewReturnView}`) })
@@ -131,31 +127,55 @@ export function PreviewPanel() {
             </button>
             <span
               className="min-w-0 flex-1 truncate text-xs text-muted-foreground"
-              title={selectedFile}
+              title={selectedFile ?? ""}
             >
               {fileName}
             </span>
+            <button
+              type="button"
+              onClick={openSearch}
+              className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              title={t("preview.searchPagesHint")}
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t("preview.searchPages")}</span>
+            </button>
           </>
         ) : (
           <>
             <span
               className="min-w-0 flex-1 truncate text-xs text-muted-foreground"
-              title={selectedFile}
+              title={selectedFile ?? ""}
             >
-              {fileName}
+              {fileName || t("preview.selectFile")}
             </span>
             <button
-              onClick={closePreview}
-              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent"
-              title={t("common.close")}
+              type="button"
+              onClick={openSearch}
+              className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              title={t("preview.searchPagesHint")}
             >
-              <X className="h-3.5 w-3.5" />
+              <Search className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t("preview.searchPages")}</span>
             </button>
+            {selectedFile && (
+              <button
+                onClick={closePreview}
+                className="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent"
+                title={t("common.close")}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </>
         )}
       </div>
       <div className="flex-1 min-w-0 overflow-auto">
-        {externalPreview?.path === selectedFile ? (
+        {!selectedFile ? (
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            {t("preview.selectFile")}
+          </div>
+        ) : externalPreview?.path === selectedFile ? (
           <ExternalReferencePreview
             source={externalPreview.source}
             title={externalPreview.title}

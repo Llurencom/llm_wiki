@@ -10,13 +10,21 @@
   例：仅当存在 review/lint 待办时，侧栏才显示 Tasks 图标与计数徽标。
 - 目标：降低认知负担，让 Chat 与 Sources 成为主入口，其余为按需探索。
 
-## 1. 两级图标导航（CORE + MORE）
+## 1. 两级图标导航（CORE + MORE）+ 左侧目录按视图专属
 
-**位置**：`src/components/layout/icon-sidebar.tsx`。
-- `CORE_ITEMS`：Chat、Sources（常驻）。
-- `MORE_ITEMS`：Search、Wiki、Graph、Skills（收进"⋯"菜单）。
+**位置**：`src/components/layout/icon-sidebar.tsx`、`src/components/layout/sidebar-panel.tsx`。
+- `CORE_ITEMS`：**对话(Chat)、知识库(Wiki)**（常驻）。知识库是用户"知识/经验分身"的成果，
+  与对话（积累+使用两条核心业务的入口）并列为两个一等入口。
+- `MORE_ITEMS`：**文件(Sources)、Search、Graph、Skills**（收进"⋯"菜单）+ 扫描质量（直达 Lint）。
+  这些都是非核心辅助：文件=导入/原始资料，其余为对知识库的工具操作。
 - 底部条件项：Tasks（有待办才出现）、Daemon 状态、Settings（有更新红点）、Switch Project。
-- **理由**：精简侧栏，主次分明。
+- **配套 IA 改造**（`sidebar-panel.tsx`）：原左侧目录是"知识+文件"**混合双 Tab**，导致点"原始资料"
+  时知识库与文件混在一起。现已**去掉双 Tab**，改为**按 `activeView` 驱动**——
+  知识库及其他知识语境视图（search/graph/todos/review/lint）显 `<KnowledgeTree>`，
+  文件（sources）显 `<FileTree>`，二者不再共用一个面板（彻底分开）。
+- i18n：`nav.wiki`="知识库"/"Knowledge"，`nav.sources`="文件"/"Files"。
+- **理由**：核心业务=对话（①导入/对话积累知识 ②对话使用知识）；知识库是核心成果，须一等公民；
+  文件/搜索/图谱/Skills/质检为非核心，收进 More。
 
 ## 2. 统一待办中心（Review + Lint 两 Tab）
 
@@ -33,12 +41,31 @@
   并在预览面板显示醒目「返回 [来源]」按钮（在关闭 X 之前）。
 - **理由**：从搜索/待办探索页面后不"迷路"。
 
-## 4. Chat 里的「查找页面」按钮
+## 4. 知识库预览区的「搜索页面」入口（原 Chat 查找页面按钮，已迁移）
 
-**位置**：`src/components/chat/chat-input.tsx`（onFindPages 按钮）、`chat-panel.tsx` 传入
-`onFindPages={() => useWikiStore.getState().setActiveView("search")}`。
-- Chat 输入栏醒目的 Search 图标按钮，不离开 Chat 直接跳到搜索。
-- **理由**：把"找页面"提升为一等操作，与"提问"平级。
+**位置**：`src/components/layout/preview-panel.tsx`（header 始终渲染，含 Search 按钮，点击
+`useWikiStore.getState().setActiveView("search")`）。
+- 早期本 fork 把「查找页面」按钮放在 Chat 输入栏（`chat-input.tsx` 的 `onFindPages`）。
+  但"搜知识库页面"属于知识库（wiki）范畴，放对话框里语义错位，已于本次改动**从 Chat 移除**，
+  改为在 **wiki 预览面板 header**（`PreviewPanel`）常驻一个「搜索页面」按钮。
+- `PreviewPanel` 因此重构：header 不再因无选中文件而早退（原空态早退导致 header 不渲染），
+  改为 header 始终显示（无文件时标题显示 `preview.selectFile` 占位），空态降级为 body。
+- i18n：新增 `preview.searchPages` / `preview.searchPagesHint`；旧的 `chat.findPages` /
+  `chat.findPagesHint` 已删除。
+- **理由**：搜索入口归位到它服务的知识库视图，符合"功能出现在它所属的语境里"。
+
+## 4b. Chat 输入栏精简（去掉向外的开关）
+
+**位置**：`src/components/chat/chat-input.tsx`、`chat-panel.tsx`。
+- 从 Chat 输入栏底部工具栏**移除**三个控件：**添加图片**（`ImagePlus` 按钮 + 隐藏 file input +
+  `handleFilePick`）、**Web 搜索**（`Globe2` 开关）、**AnyTxt 搜索**（`FileSearch` 开关 + Tooltip）。
+- 保留：**Skills**、**检索模式**、**Agent 模式**。
+- 图片能力**未完全删除**：粘贴（`handlePaste`→`addFiles`）、`images` 状态、预览/移除、视觉发送
+  管道仍在，只是不再有显式附件按钮（WYSIWYG：用不到就不占位）。
+- `useWebSearch` / `useAnyTxtSearch` 的 store 字段与 send 管道保留（默认 false），仅移除 UI 开关；
+  对应 `onUseWebSearchChange` prop 与 `setUseWebSearch` 声明已清理。
+- **理由**：本平台定位是**向内**的个人知识分身；联网 Web 搜索、AnyTxt 外部索引属"向外"能力，
+  默认收起可降低认知负担，对齐"核心业务是对话问知识库"。
 
 ## 5. "扫描质量"直达 Lint
 
@@ -76,10 +103,11 @@
 ## 定制文件清单（改动时优先检查）
 
 ```
-src/components/layout/icon-sidebar.tsx     # 两级导航 + 扫描质量
-src/components/layout/preview-panel.tsx    # 返回导航按钮
+src/components/layout/icon-sidebar.tsx     # 两级导航(CORE=对话/知识库) + 扫描质量
+src/components/layout/sidebar-panel.tsx    # 去混合双Tab，按 activeView 驱动(知识树/文件树)
+src/components/layout/preview-panel.tsx    # 返回导航按钮 + 搜索页面入口（header 常驻）
 src/components/todos/todos-view.tsx        # 统一待办 Tab
-src/components/chat/chat-input.tsx         # 查找页面按钮
+src/components/chat/chat-input.tsx         # 精简工具栏（见 §4b）
 src/stores/wiki-store.ts                   # previewReturnView / todosInitialTab
 src-tauri/tauri.conf.json                  # productName / title / version
 src-tauri/tauri.windows.conf.json          # Windows title
