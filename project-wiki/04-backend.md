@@ -58,6 +58,8 @@
 - **服务状态 / Agent（lib.rs, agent/skills.rs）**：`clip_server_status`、`api_server_status`、
   `api_server_reload_config`、`agent_start_turn`、`agent_start_turn_stream`(发 `agent-event`)、
   `agent_cancel_turn`、`agent_get_session`、`agent_list_sessions`、`agent_list_skills`、
+  `agent_create_skill`（写 `<项目>/.llm-wiki/skills/<id>.md`，校验 id/必填字段、拒覆盖）、
+  `agent_delete_skill`（按根目录优先解析并删除 `<id>.md` 或 `<id>/SKILL.md`）、
   `mcp_server_entry_path`、`set_proxy_env`、`set_close_behavior`。
 
 ## Agent 运行时（`src-tauri/src/agent/`）

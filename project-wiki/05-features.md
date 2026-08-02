@@ -95,6 +95,12 @@
 本地 API 服务、关于/更新、Skills、通用（自启动/关闭行为/缩放）。
 配置存 `.llm-wiki/app-state.json`；每预设 override 独立存（便于轮换 key）。
 
+**Skills 管理**（`src/components/settings/sections/skills-section.tsx` + 后端 `agent/skills.rs`）：
+扫描 `.llm-wiki/skills`、`~/.claude/skills`、`~/.codex/skills`、`~/.agents/skills`，列出并可逐项
+启用/禁用。支持**新增**（`agent_create_skill`：在项目 `.llm-wiki/skills/<id>.md` 写 frontmatter
+`name`+`description`+指令正文，id 由名称 slug 化、校验、拒覆盖）与**删除**（`agent_delete_skill`：
+按根目录优先解析并删除 `<id>.md` 或 `<id>/SKILL.md`，并清理 selectedSkills/disabledSkills 残留）。
+
 ## J. 本地 HTTP API + MCP + AI Agent Skill
 见 [04-backend.md](04-backend.md#本地服务)。api_server(:19828) 暴露项目给外部 agent/脚本与 MCP；
 可用一条命令把外部 AI agent 接入（详见根 README 对应章节）。

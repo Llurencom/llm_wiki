@@ -31,6 +31,100 @@ pub fn agent_list_skills(project_path: String) -> Vec<AvailableAgentSkill> {
     list_available_skills(&project_path)
 }
 
+/// Write a new single-file skill into the project's `.llm-wiki/skills`
+/// folder. User-created skills always land in the project root (never the
+/// global `~/.claude` / `~/.codex` / `~/.agents` dirs) so they travel with
+/// the project and don't leak across unrelated projects. The `id` becomes
+/// the file stem (`<id>.md`); it is validated with the same portable-name
+/// rules used for loading. Refuses to overwrite an existing skill.
+#[tauri::command]
+pub fn agent_create_skill(
+    project_path: String,
+    id: String,
+    name: String,
+    description: String,
+    instructions: String,
+) -> Result<String, String> {
+    let slug = normalize_skill_name(&id).ok_or_else(|| {
+        format!(
+            "Invalid skill id \"{id}\". Use letters, numbers, spaces, or hyphens — no slashes or path segments."
+        )
+    })?;
+    let description = description.trim();
+    if description.is_empty() {
+        return Err("Skill description is required.".to_string());
+    }
+    let instructions = instructions.trim();
+    if instructions.is_empty() {
+        return Err("Skill instructions are required.".to_string());
+    }
+    let name_value = {
+        let trimmed = name.trim();
+        if trimmed.is_empty() {
+            slug.clone()
+        } else {
+            trimmed.to_string()
+        }
+    };
+
+    let root = Path::new(&project_path)
+        .join(".llm-wiki")
+        .join("skills");
+    fs::create_dir_all(&root).map_err(|e| format!("Failed to create skills folder: {e}"))?;
+
+    let file_path = root.join(format!("{slug}.md"));
+    if fs::symlink_metadata(&file_path).is_ok() {
+        return Err(format!("A skill named \"{slug}\" already exists in this project."));
+    }
+
+    let body = format!(
+        "---\nname: {name_value}\ndescription: {description}\n---\n{instructions}\n",
+    );
+    fs::write(&file_path, body).map_err(|e| format!("Failed to write skill file: {e}"))?;
+    Ok(file_path.to_string_lossy().replace('\\', "/"))
+}
+
+/// Delete a discovered skill. Resolves the skill's actual file/folder the
+/// same way listing does — first matching root wins (project before user
+/// roots), so a project skill that shadows a same-id user skill deletes the
+/// project copy (and the user copy would resurface on the next scan). A
+/// single-file skill (`<id>.md`) deletes the file; a folder skill
+/// (`<id>/SKILL.md`) deletes the whole folder. Returns the removed path.
+#[tauri::command]
+pub fn agent_delete_skill(project_path: String, id: String) -> Result<String, String> {
+    let slug = normalize_skill_name(&id)
+        .ok_or_else(|| format!("Invalid skill id \"{id}\"."))?;
+    for root in skill_roots(&project_path) {
+        let single = root.path.join(format!("{slug}.md"));
+        if is_regular_file(&single) {
+            fs::remove_file(&single)
+                .map_err(|e| format!("Failed to delete skill file: {e}"))?;
+            return Ok(single.to_string_lossy().replace('\\', "/"));
+        }
+        let dir = root.path.join(&slug);
+        if is_regular_dir(&dir) && find_skill_main_file(&dir).is_some() {
+            fs::remove_dir_all(&dir)
+                .map_err(|e| format!("Failed to delete skill folder: {e}"))?;
+            return Ok(dir.to_string_lossy().replace('\\', "/"));
+        }
+    }
+    Err(format!(
+        "Skill \"{slug}\" was not found in any scanned folder."
+    ))
+}
+
+fn is_regular_file(path: &Path) -> bool {
+    fs::symlink_metadata(path)
+        .map(|meta| !meta.file_type().is_symlink() && meta.is_file())
+        .unwrap_or(false)
+}
+
+fn is_regular_dir(path: &Path) -> bool {
+    fs::symlink_metadata(path)
+        .map(|meta| !meta.file_type().is_symlink() && meta.is_dir())
+        .unwrap_or(false)
+}
+
 pub fn load_project_skills(project_path: &str, requested: &[String]) -> Vec<AgentSkill> {
     if requested.is_empty() {
         return Vec::new();
@@ -695,5 +789,132 @@ mod tests {
         let loaded = load_project_skills(root.to_str().unwrap(), &[article.id.clone()]);
         assert_eq!(loaded[0].name, "Article Illustrator");
         let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn agent_create_skill_writes_a_loadable_skill() {
+        let root = std::env::temp_dir().join(format!("llm-wiki-skills-{}", Uuid::new_v4()));
+
+        let path = agent_create_skill(
+            root.to_str().unwrap().to_string(),
+            "summarizer".to_string(),
+            "Summarizer".to_string(),
+            "Summarize long notes".to_string(),
+            "Read the note, then produce a 3-bullet summary.".to_string(),
+        )
+        .expect("create should succeed");
+        assert!(path.ends_with("/.llm-wiki/skills/summarizer.md"));
+
+        let listed = list_available_skills(root.to_str().unwrap());
+        let skill = listed
+            .iter()
+            .find(|s| s.id == "summarizer")
+            .expect("created skill should be listed");
+        assert_eq!(skill.name, "Summarizer");
+        assert_eq!(skill.source, "project");
+
+        let loaded = load_project_skills(root.to_str().unwrap(), &["summarizer".to_string()]);
+        assert_eq!(loaded.len(), 1);
+        assert!(loaded[0].instructions.contains("3-bullet summary"));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn agent_create_skill_rejects_duplicate_and_bad_input() {
+        let root = std::env::temp_dir().join(format!("llm-wiki-skills-{}", Uuid::new_v4()));
+        agent_create_skill(
+            root.to_str().unwrap().to_string(),
+            "reviewer".to_string(),
+            "Reviewer".to_string(),
+            "Review".to_string(),
+            "Do the review.".to_string(),
+        )
+        .unwrap();
+
+        // Same id again -> already exists.
+        let dup = agent_create_skill(
+            root.to_str().unwrap().to_string(),
+            "reviewer".to_string(),
+            "Reviewer".to_string(),
+            "Review".to_string(),
+            "Do the review.".to_string(),
+        );
+        assert!(dup.is_err());
+
+        // Path-traversal id rejected.
+        let bad = agent_create_skill(
+            root.to_str().unwrap().to_string(),
+            "../escape".to_string(),
+            "x".to_string(),
+            "y".to_string(),
+            "z".to_string(),
+        );
+        assert!(bad.is_err());
+
+        // Empty description / instructions rejected.
+        let no_desc = agent_create_skill(
+            root.to_str().unwrap().to_string(),
+            "nodesc".to_string(),
+            "x".to_string(),
+            "   ".to_string(),
+            "body".to_string(),
+        );
+        assert!(no_desc.is_err());
+        let no_body = agent_create_skill(
+            root.to_str().unwrap().to_string(),
+            "nobody".to_string(),
+            "x".to_string(),
+            "desc".to_string(),
+            "   ".to_string(),
+        );
+        assert!(no_body.is_err());
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn agent_delete_skill_removes_file_and_folder_skills() {
+        let root = std::env::temp_dir().join(format!("llm-wiki-skills-{}", Uuid::new_v4()));
+        let skills_dir = root.join(".llm-wiki").join("skills");
+        // file skill
+        fs::create_dir_all(&skills_dir).unwrap();
+        fs::write(
+            skills_dir.join("reviewer.md"),
+            "---\nname: reviewer\ndescription: Review\n---\nDo it.",
+        )
+        .unwrap();
+        // folder skill
+        fs::create_dir_all(skills_dir.join("illustrator")).unwrap();
+        fs::write(
+            skills_dir.join("illustrator").join("SKILL.md"),
+            "---\nname: illustrator\ndescription: Draw\n---\nDraw things.",
+        )
+        .unwrap();
+
+        let removed_file =
+            agent_delete_skill(root.to_str().unwrap().to_string(), "reviewer".to_string())
+                .expect("file skill should delete");
+        assert!(removed_file.ends_with("/reviewer.md"));
+        assert!(!skills_dir.join("reviewer.md").exists());
+
+        let removed_dir =
+            agent_delete_skill(root.to_str().unwrap().to_string(), "illustrator".to_string())
+                .expect("folder skill should delete");
+        assert!(removed_dir.ends_with("/illustrator"));
+        assert!(!skills_dir.join("illustrator").exists());
+
+        // After deletion, the skills are gone from the listing.
+        let listed = list_available_skills(root.to_str().unwrap());
+        assert!(listed.iter().all(|s| s.id != "reviewer" && s.id != "illustrator"));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn agent_delete_skill_errors_when_missing() {
+        let root = std::env::temp_dir().join(format!("llm-wiki-skills-{}", Uuid::new_v4()));
+        let result = agent_delete_skill(root.to_str().unwrap().to_string(), "ghost".to_string());
+        assert!(result.is_err());
     }
 }

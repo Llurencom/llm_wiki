@@ -660,6 +660,8 @@ pub fn run() {
             agent_get_session,
             agent_list_sessions,
             agent::skills::agent_list_skills,
+            agent::skills::agent_create_skill,
+            agent::skills::agent_delete_skill,
             mcp_server_entry_path,
             commands::vectorstore::vector_upsert,
             commands::vectorstore::vector_search,
