@@ -55,7 +55,10 @@ export function AboutSection() {
     useUpdateStore.getState().setChecking(true)
     const result = await checkForUpdates({
       currentVersion: __APP_VERSION__,
-      repo: "Llurencom/llm_wiki",
+      // Track upstream nashsu so this fork still detects when a new
+      // upstream release ships (the fork merges upstream manually). The
+      // displayed GitHub link / branding stays Llurencom (see below).
+      repo: "nashsu/llm_wiki",
     })
     const now = Date.now()
     useUpdateStore.getState().setResult(result, now)
