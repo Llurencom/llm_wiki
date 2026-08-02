@@ -103,8 +103,11 @@
 ## I. 设置
 
 **文件**：`src/components/settings/*`、`lib/project-store.ts`、`llm-providers.ts`、`preset-resolver.ts`。
-分区：LLM（provider/模型/key/上下文/推理）、Provider 预设、搜索、Embedding、MinerU、图注、代理、
-本地 API 服务、关于/更新、Skills、通用（自启动/关闭行为/缩放）。
+分区（侧栏）：**一级** = 通用、资料文件夹监控、输出偏好、界面、Skills、维护、关于；
+**高级设置（可折叠子分组）** = LLM（provider/模型/key/上下文/推理）、Provider 预设、搜索（外部信息源）、
+Embedding、MinerU、图注（multimodal）、代理/网络、定时导入、本地 API 服务、更新日志。
+（`SettingsView` 的 `PRIMARY_CATEGORIES` / `ADVANCED_CATEGORIES` / `FOOTER_CATEGORIES` 三组驱动侧栏；高级组
+默认收起，选中其子项时自动展开。）
 配置存 `.llm-wiki/app-state.json`；每预设 override 独立存（便于轮换 key）。
 
 **Skills 管理**（`src/components/settings/sections/skills-section.tsx` + 后端 `agent/skills.rs`）：

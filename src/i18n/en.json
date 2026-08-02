@@ -417,6 +417,7 @@
       "output": "Output",
       "interface": "Interface",
       "skills": "Skills",
+      "advanced": "Advanced",
       "maintenance": "Maintenance",
       "changelog": "Changelog",
       "about": "About"

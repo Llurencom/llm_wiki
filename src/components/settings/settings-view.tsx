@@ -16,6 +16,8 @@ import {
   Settings,
   FileText,
   Sparkles,
+  ChevronDown,
+  SlidersHorizontal,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { invoke } from "@tauri-apps/api/core"
@@ -74,22 +76,36 @@ interface Category {
   icon: typeof Bot
 }
 
-const CATEGORIES: Category[] = [
+// Primary categories shown directly in the settings sidebar (always visible,
+// one click away — these are the day-to-day / non-technical controls).
+const PRIMARY_CATEGORIES: Category[] = [
   { id: "general", labelKey: "settings.categories.general", icon: Settings },
+  { id: "source-watch", labelKey: "settings.categories.sourceWatch", icon: FolderSync },
+  { id: "output", labelKey: "settings.categories.output", icon: Languages },
+  { id: "interface", labelKey: "settings.categories.interface", icon: Palette },
+  { id: "skills", labelKey: "settings.categories.skills", icon: Sparkles },
+]
+
+// Advanced / technical config grouped under a collapsible "高级设置" sub-module
+// so the primary sidebar stays uncluttered. Everything not in the primary /
+// footer list lives here.
+const ADVANCED_CATEGORIES: Category[] = [
   { id: "llm", labelKey: "settings.categories.llm", icon: Bot },
   { id: "embedding", labelKey: "settings.categories.embedding", icon: Binary },
   { id: "multimodal", labelKey: "settings.categories.multimodal", icon: ImageIcon },
   { id: "web-search", labelKey: "settings.categories.webSearch", icon: Globe },
   { id: "network", labelKey: "settings.categories.network", icon: Network },
-  { id: "source-watch", labelKey: "settings.categories.sourceWatch", icon: FolderSync },
   { id: "scheduled-import", labelKey: "settings.categories.scheduledImport", icon: Clock },
   { id: "mineru", labelKey: "settings.categories.mineru", icon: FileText },
   { id: "api-server", labelKey: "settings.categories.apiServer", icon: Server },
-  { id: "output", labelKey: "settings.categories.output", icon: Languages },
-  { id: "interface", labelKey: "settings.categories.interface", icon: Palette },
-  { id: "skills", labelKey: "settings.categories.skills", icon: Sparkles },
-  { id: "maintenance", labelKey: "settings.categories.maintenance", icon: Wrench },
   { id: "changelog", labelKey: "settings.categories.changelog", icon: History },
+]
+
+const ADVANCED_IDS = new Set<Category["id"]>(ADVANCED_CATEGORIES.map((c) => c.id))
+
+// Footer categories after the advanced group.
+const FOOTER_CATEGORIES: Category[] = [
+  { id: "maintenance", labelKey: "settings.categories.maintenance", icon: Wrench },
   { id: "about", labelKey: "settings.categories.about", icon: Info },
 ]
 
@@ -225,7 +241,12 @@ export function SettingsView() {
   // per version.
   const updateAvailable = useUpdateStore((s) => hasAvailableUpdate(s))
 
-  const [active, setActive] = useState<CategoryId>("llm")
+  const [active, setActive] = useState<CategoryId>("general")
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  // The advanced group must stay open while one of its children is active, so
+  // direct navigation to an advanced category (or just selecting one) can never
+  // leave the active item hidden behind a collapsed group.
+  const showAdvanced = advancedOpen || ADVANCED_IDS.has(active)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [currentTheme, setCurrentTheme] = useState<AppTheme>("system")
@@ -672,45 +693,74 @@ export function SettingsView() {
           {t("settings.title")}
         </div>
         <nav className="flex-1 overflow-y-auto px-2 pb-3">
-          {CATEGORIES.map((c) => {
-            const Icon = c.icon
-            const isActive = c.id === active
-            // Mirror the gear-icon dot inside the settings sidebar
-            // so the user can find which sub-section the update
-            // notification is pointing at. Update info lives in
-            // the About panel, so the dot follows the About row.
-            // Same store, same gating — once dismissed, both
-            // disappear together.
-            const showUpdateDot =
-              c.id === "about" && updateAvailable
-            return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setActive(c.id)}
-                aria-current={isActive ? "page" : undefined}
-                className={`group mb-0.5 flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors ${
-                  isActive
-                    ? "bg-foreground/[0.08] font-medium text-foreground ring-1 ring-border/70"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-                }`}
-              >
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-colors ${
-                    isActive ? "text-primary" : "text-muted-foreground/80 group-hover:text-accent-foreground"
+          {(() => {
+            const categoryButton = (c: Category, indented = false) => {
+              const Icon = c.icon
+              const isActive = c.id === active
+              // Mirror the gear-icon dot inside the settings sidebar so the
+              // user can find which sub-section the update notification is
+              // pointing at. Update info lives in the About panel, so the dot
+              // follows the About row.
+              const showUpdateDot = c.id === "about" && updateAvailable
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setActive(c.id)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`group mb-0.5 flex w-full items-center gap-2.5 rounded-md ${
+                    indented ? "px-2 py-1" : "px-2.5 py-1.5"
+                  } text-sm transition-colors ${
+                    isActive
+                      ? "bg-foreground/[0.08] font-medium text-foreground ring-1 ring-border/70"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
                   }`}
-                />
-                <span className="truncate">{t(c.labelKey)}</span>
-                {showUpdateDot && (
-                  <span
-                    className="ml-auto h-2 w-2 shrink-0 rounded-full bg-red-500"
-                    aria-label={t("nav.updateAvailable")}
-                    title={t("nav.updateAvailable")}
+                >
+                  <Icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
+                      isActive ? "text-primary" : "text-muted-foreground/80 group-hover:text-accent-foreground"
+                    }`}
                   />
-                )}
-              </button>
+                  <span className="truncate">{t(c.labelKey)}</span>
+                  {showUpdateDot && (
+                    <span
+                      className="ml-auto h-2 w-2 shrink-0 rounded-full bg-red-500"
+                      aria-label={t("nav.updateAvailable")}
+                      title={t("nav.updateAvailable")}
+                    />
+                  )}
+                </button>
+              )
+            }
+
+            return (
+              <>
+                {PRIMARY_CATEGORIES.map((c) => categoryButton(c))}
+                {/* 高级设置 — collapsible sub-module grouping all advanced /
+                    technical config so the primary list stays short. */}
+                <div className="mb-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedOpen((open) => !open)}
+                    aria-expanded={showAdvanced}
+                    className="group flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50 hover:text-accent-foreground"
+                  >
+                    <SlidersHorizontal className="h-4 w-4 shrink-0 text-muted-foreground/80 group-hover:text-accent-foreground" />
+                    <span className="truncate">{t("settings.categories.advanced")}</span>
+                    <ChevronDown
+                      className={`ml-auto h-4 w-4 shrink-0 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {showAdvanced && (
+                    <div className="ml-[1.05rem] mt-0.5 flex flex-col gap-0.5 border-l border-border/60 pl-2">
+                      {ADVANCED_CATEGORIES.map((c) => categoryButton(c, true))}
+                    </div>
+                  )}
+                </div>
+                {FOOTER_CATEGORIES.map((c) => categoryButton(c))}
+              </>
             )
-          })}
+          })()}
         </nav>
       </aside>
 
