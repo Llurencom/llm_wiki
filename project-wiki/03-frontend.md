@@ -41,6 +41,8 @@ src/
   `app-layout-visibility.ts` 决定左右面板显隐（Settings/Chat 隐藏左右；Sources 隐藏右）。
 - **IconSidebar** (`icon-sidebar.tsx`)：竖向导航，**两级**（fork 定制）：
   - `CORE_ITEMS`：**对话 Chat、知识库 Wiki**（常驻；知识库是核心成果，与对话并列为两个一等入口）。
+  - **「文件导入」动作按钮**（紧邻 CORE，位于知识库下方）：点开菜单选"导入文件/导入文件夹"，复用
+    `pickAndImportFiles/Folder`（→ `importSourceFiles/Folder`，与文件视图同一管线），导入后跳到文件(Sources)视图。
   - `MORE_ITEMS`：**文件 Sources**（"⋯"菜单）+ 扫描质量（直达 Lint）。Search / Graph
     已并入知识库视图（见下 KnowledgeView）；**Skills 已移入设置**（Settings 的「Skills」分区）。三者都不再有独立导航项。
   - 底部条件项：Tasks（仅当有 review/lint 待办时出现）、Daemon 状态、Settings（有更新时红点）、
@@ -50,8 +52,7 @@ src/
 - **KnowledgeView**（`content-area.tsx` 内）：知识库（wiki）视图容器，含「**关系图谱 | 搜索**」并列
   Tab（默认图谱），由 store `wikiMode`（graph/search/preview）驱动。`setWikiBrowseMode` 切 Tab；
   点树/搜索结果/待办经 `openPathInPreview`/`openFileInPreview` 置 `wikiMode="preview"` 显示
-  `PreviewPanel`，`closePreview` 回到上次浏览 Tab（`wikiBrowseMode`）。另在 Tab 栏右侧有「**文件导入**」
-  入口（薄封装 `pickAndImportFiles/Folder`，导入后跳文件视图，见 [05 §A](05-features.md)）。
+  `PreviewPanel`，`closePreview` 回到上次浏览 Tab（`wikiBrowseMode`）。
 - **PreviewPanel** (`preview-panel.tsx`)：加载/自动保存编排；`previewReturnView` 存在时显示醒目
   「返回 [来源]」按钮（fork）。**header 始终渲染**（无选中文件时不早退，空态降为 body），并常驻
   「搜索页面」按钮（`setWikiBrowseMode("search")`，进入知识库搜索 Tab）。

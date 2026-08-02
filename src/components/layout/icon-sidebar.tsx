@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react"
 import {
-  FileText, FolderOpen, Settings, ArrowLeftRight, ListTodo, MessageSquare, MoreHorizontal, ShieldCheck, BookOpen,
+  FileText, FolderOpen, Settings, ArrowLeftRight, ListTodo, MessageSquare, MoreHorizontal, ShieldCheck, BookOpen, Upload, FileUp, FolderUp,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
 import { useTodoTotalPending } from "@/lib/todos"
 import { useUpdateStore, hasAvailableUpdate } from "@/stores/update-store"
 import { useTranslation } from "react-i18next"
+import { pickAndImportFiles, pickAndImportFolder } from "@/lib/source-import-actions"
 import logoImg from "@/assets/logo.jpg"
 import type { WikiState } from "@/stores/wiki-store"
 
@@ -81,6 +82,51 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
   // A More-menu view counts as active so the More button stays highlighted.
   const moreActive = MORE_ITEMS.some((item) => item.view === activeView)
 
+  // "文件导入" gateway — sits directly below 知识库 in the sidebar. It is an
+  // ACTION, not a view: clicking it opens a small menu to pick import type,
+  // then reuses the SAME import code path as the Sources view
+  // (pickAndImportFiles/Folder → importSourceFiles/Folder). After a successful
+  // import we land on the Sources (文件) view so the user sees the new files.
+  // Data import is core business — this stays a thin wrapper, never a
+  // reimplementation.
+  const project = useWikiStore((s) => s.project)
+  const llmConfig = useWikiStore((s) => s.llmConfig)
+  const sourceWatchConfig = useWikiStore((s) => s.sourceWatchConfig)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const importRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!importOpen) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (importRef.current && !importRef.current.contains(event.target as Node)) {
+        setImportOpen(false)
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => document.removeEventListener("pointerdown", onPointerDown)
+  }, [importOpen])
+
+  const runImport = async (kind: "files" | "folder") => {
+    if (!project) return
+    setImporting(true)
+    try {
+      const ok =
+        kind === "files"
+          ? await pickAndImportFiles(project, llmConfig, sourceWatchConfig, t("sources.importSourceFiles"))
+          : await pickAndImportFolder(project, llmConfig, sourceWatchConfig, t("sources.importSourceFolder"))
+      if (ok) {
+        useWikiStore.getState().bumpDataVersion()
+        setActiveView("sources")
+      }
+    } catch (err) {
+      console.error(`[sidebar] failed to import ${kind}:`, err)
+    } finally {
+      setImporting(false)
+      setImportOpen(false)
+    }
+  }
+
   return (
     <TooltipProvider delay={300}>
       <div className="flex h-full w-12 flex-col items-center border-r bg-muted/50 py-2">
@@ -109,6 +155,50 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
               <TooltipContent side="right">{t(labelKey)}</TooltipContent>
             </Tooltip>
           ))}
+          {/* 文件导入 — an action entry directly below 知识库. Opens a menu to
+              pick import type; on success it leaves for the Sources (文件)
+              view, so it is intentionally not a navigation view. */}
+          <div ref={importRef} className="relative">
+            <Tooltip>
+              <TooltipTrigger
+                onClick={() => setImportOpen((open) => !open)}
+                disabled={!project || importing}
+                className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors disabled:opacity-50 ${
+                  importOpen
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                }`}
+              >
+                <Upload className="h-5 w-5" />
+                {importing && (
+                  <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+                )}
+              </TooltipTrigger>
+              <TooltipContent side="right">{t("nav.importFiles")}</TooltipContent>
+            </Tooltip>
+            {importOpen && (
+              <div className="absolute left-11 top-0 z-30 w-44 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => void runImport("files")}
+                  disabled={importing || !project}
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent/60 disabled:opacity-50"
+                >
+                  <FileUp className="h-4 w-4 shrink-0" />
+                  {t("sources.importSourceFiles")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void runImport("folder")}
+                  disabled={importing || !project}
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent/60 disabled:opacity-50"
+                >
+                  <FolderUp className="h-4 w-4 shrink-0" />
+                  {t("sources.importSourceFolder")}
+                </button>
+              </div>
+            )}
+          </div>
           {/* More — secondary views appear on demand, not always spread out */}
           <div ref={moreRef} className="relative">
             <Tooltip>
