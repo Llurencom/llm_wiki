@@ -101,7 +101,7 @@ export function PreviewPanel() {
       : getFileName(selectedFile)
     : ""
 
-  const openSearch = () => useWikiStore.getState().setActiveView("search")
+  const openSearch = () => useWikiStore.getState().setWikiBrowseMode("search")
 
   const backLabel = previewReturnView
     ? t("preview.backTo", { source: t(`nav.${previewReturnView}`) })

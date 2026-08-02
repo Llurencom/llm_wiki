@@ -26,10 +26,10 @@ src/
 | view | 组件 | 用途 |
 |------|------|------|
 | `chat` | ChatPanel | RAG 问答、Web 搜索、Agent 技能 |
-| `wiki` | PreviewPanel | wiki 页面查看/编辑（预览模式可全宽） |
+| `wiki` | KnowledgeView | 知识库：**关系图谱 / 搜索** 并列 Tab（默认图谱）；`wikiMode="preview"` 时显示 PreviewPanel |
 | `sources` | SourcesView | 原始来源树 + 导入 |
-| `search` | SearchView | 全文 + 向量搜索结果 |
-| `graph` | GraphView | 知识图谱可视化与分析 |
+| `search` | SearchView | （现为知识库「搜索」Tab，无独立导航） |
+| `graph` | GraphView | （现为知识库「关系图谱」Tab，无独立导航） |
 | `lint` / `review` | LintView / ReviewView | 结构 / 知识质量队列（也聚合进 todos） |
 | `todos` | TodosView | Review + Lint 两 Tab 聚合面（fork） |
 | `skills` | SkillsSection | Agent 技能浏览/编辑 |
@@ -41,14 +41,19 @@ src/
   `app-layout-visibility.ts` 决定左右面板显隐（Settings/Chat 隐藏左右；Sources 隐藏右）。
 - **IconSidebar** (`icon-sidebar.tsx`)：竖向导航，**两级**（fork 定制）：
   - `CORE_ITEMS`：**对话 Chat、知识库 Wiki**（常驻；知识库是核心成果，与对话并列为两个一等入口）。
-  - `MORE_ITEMS`：**文件 Sources、Search、Graph、Skills**（"⋯"菜单）+ 扫描质量（直达 Lint）。
+  - `MORE_ITEMS`：**文件 Sources、Skills**（"⋯"菜单）+ 扫描质量（直达 Lint）。Search / Graph
+    已并入知识库视图（见下 KnowledgeView），不再有独立导航项。
   - 底部条件项：Tasks（仅当有 review/lint 待办时出现）、Daemon 状态、Settings（有更新时红点）、
     Switch Project。
 - **SidebarPanel** (`sidebar-panel.tsx`)：左侧目录面板，**按 `activeView` 驱动**（已去掉旧的
   "知识+文件"混合双 Tab）——知识库及知识语境视图显 `KnowledgeTree`，文件(sources)显 `FileTree`。
+- **KnowledgeView**（`content-area.tsx` 内）：知识库（wiki）视图容器，含「**关系图谱 | 搜索**」并列
+  Tab（默认图谱），由 store `wikiMode`（graph/search/preview）驱动。`setWikiBrowseMode` 切 Tab；
+  点树/搜索结果/待办经 `openPathInPreview`/`openFileInPreview` 置 `wikiMode="preview"` 显示
+  `PreviewPanel`，`closePreview` 回到上次浏览 Tab（`wikiBrowseMode`）。
 - **PreviewPanel** (`preview-panel.tsx`)：加载/自动保存编排；`previewReturnView` 存在时显示醒目
   「返回 [来源]」按钮（fork）。**header 始终渲染**（无选中文件时不早退，空态降为 body），并常驻
-  「搜索页面」按钮（`setActiveView("search")`，fork；见 [06 §4](06-fork-customizations.md)）。
+  「搜索页面」按钮（`setWikiBrowseMode("search")`，进入知识库搜索 Tab）。
 - **ActivityPanel**：左侧底部实时导入/agent 活动日志。
 
 ## Zustand Stores（`src/stores/`）

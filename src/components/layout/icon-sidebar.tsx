@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
-  FileText, FolderOpen, Search, Network, Settings, ArrowLeftRight, ListTodo, MessageSquare, Sparkles, MoreHorizontal, ShieldCheck, BookOpen,
+  FileText, FolderOpen, Settings, ArrowLeftRight, ListTodo, MessageSquare, Sparkles, MoreHorizontal, ShieldCheck, BookOpen,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
@@ -22,12 +22,11 @@ const CORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] =
   { view: "wiki", icon: BookOpen, labelKey: "nav.wiki" },
 ]
 
-// Secondary layer — reachable on demand from the "More" menu. These are
-// non-core helpers: 文件 (import/raw files), 搜索, 关系图, Skills.
+// Secondary layer — reachable on demand from the "More" menu. Search and
+// Graph used to live here but are now parallel tabs inside the Knowledge
+// (wiki) view, so they no longer need their own entries.
 const MORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
   { view: "sources", icon: FolderOpen, labelKey: "nav.sources" },
-  { view: "search", icon: Search, labelKey: "nav.search" },
-  { view: "graph", icon: Network, labelKey: "nav.graph" },
   { view: "skills", icon: Sparkles, labelKey: "nav.skills" },
 ]
 

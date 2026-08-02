@@ -55,8 +55,11 @@
 **文件**：`src/components/search/*`、`src/lib/search.ts`、`embedding.ts`、`anytxt-search.ts`；
 后端 `commands/search.rs`。
 
+- **入口**：搜索现在是**知识库（wiki）视图的一个并列 Tab**（`KnowledgeView` 的「搜索」页，由 store
+  `wikiMode="search"` 驱动），不再有独立导航项。预览面板 header 的「搜索页面」按钮、知识库 Tab 切换
+  都通过 `setWikiBrowseMode("search")` 进入。
 - 关键词（分词 + 停用词 + CJK bigram）、向量（需配 embedding 端点）、混合（RRF 融合）。
-- 结果可：打开全宽预览（带返回导航）、跳转到某图片（`pendingScrollImageSrc`）。
+- 结果可：打开全宽预览（`openFileInPreview` → `wikiMode="preview"`，关闭回到搜索 Tab）、跳转到某图片（`pendingScrollImageSrc`）。
 - Embedding 配置：端点/模型、切块（目标 1000、上限 1500、重叠 200）、并发/批量可调。
 
 ## E. 图谱
@@ -64,9 +67,12 @@
 **文件**：`src/components/graph/*`、`lib/wiki-graph.ts`、`graph-insights.ts`、`graph-filters.ts`、
 `graph-search.ts`、`graph-layout-worker.ts`。
 
+- **入口**：图谱是**知识库视图的默认并列 Tab**（`KnowledgeView` 的「关系图谱」页，`wikiMode="graph"`，
+  进入知识库即默认显示），不再有独立导航项。
 - sigma.js 画布；节点类型（概念/实体/来源/查询/综合/综述）；ForceAtlas2 / Web Worker 布局。
 - **Louvain 社区发现**；按类型或社区着色；过滤、缩放、节点大小调节。
 - **洞察**：惊喜连接（低度节点的 2-hop 路径）、知识缺口（孤立簇）。
+- 点节点在图谱内置侧栏预览页面（`GraphPreviewPanel`，不走 `wikiMode="preview"`）。
 
 ## F. 待办中心（Tasks = Review + Lint，fork 聚合）
 

@@ -8,15 +8,18 @@
 
 - **意图驱动 / WYSIWYG（所见即所得）**：界面元素默认隐藏，只有当应用状态**需要**它时才出现。
   例：仅当存在 review/lint 待办时，侧栏才显示 Tasks 图标与计数徽标。
-- 目标：降低认知负担，让 Chat 与 Sources 成为主入口，其余为按需探索。
+- 目标：降低认知负担，让**对话 + 知识库**成为主入口，其余为按需探索。
 
 ## 1. 两级图标导航（CORE + MORE）+ 左侧目录按视图专属
 
-**位置**：`src/components/layout/icon-sidebar.tsx`、`src/components/layout/sidebar-panel.tsx`。
+**位置**：`src/components/layout/icon-sidebar.tsx`、`src/components/layout/sidebar-panel.tsx`、
+`src/components/layout/content-area.tsx`。
 - `CORE_ITEMS`：**对话(Chat)、知识库(Wiki)**（常驻）。知识库是用户"知识/经验分身"的成果，
   与对话（积累+使用两条核心业务的入口）并列为两个一等入口。
-- `MORE_ITEMS`：**文件(Sources)、Search、Graph、Skills**（收进"⋯"菜单）+ 扫描质量（直达 Lint）。
-  这些都是非核心辅助：文件=导入/原始资料，其余为对知识库的工具操作。
+- `MORE_ITEMS`：**文件(Sources)、Skills**（收进"⋯"菜单）+ 扫描质量（直达 Lint）。这些都是非核心辅助。
+- **搜索 / 图谱已并入知识库视图**（`KnowledgeView`，见 [05 §D/§E](05-features.md)）：知识库视图含
+  「**关系图谱 | 搜索**」并列 Tab（默认图谱，store `wikiMode` 驱动），不再有独立导航项。点知识库即默认
+  看到关系图谱；搜索与图谱为并列的两个浏览面。
 - 底部条件项：Tasks（有待办才出现）、Daemon 状态、Settings（有更新红点）、Switch Project。
 - **配套 IA 改造**（`sidebar-panel.tsx`）：原左侧目录是"知识+文件"**混合双 Tab**，导致点"原始资料"
   时知识库与文件混在一起。现已**去掉双 Tab**，改为**按 `activeView` 驱动**——

@@ -403,6 +403,19 @@ interface WikiState {
   pendingScrollImageSrc: string | null
   activeView: "chat" | "wiki" | "sources" | "search" | "graph" | "lint" | "review" | "todos" | "skills" | "settings"
   /**
+   * Mode of the Knowledge (wiki) view, which hosts the relationship graph
+   * and the wiki search as two parallel surfaces (plus a transient page
+   * preview):
+   *   "graph"   — relationship graph (default landing surface)
+   *   "search"  — wiki page search
+   *   "preview" — a specific page opened via openPathInPreview /
+   *               openFileInPreview (tree click, search result, todo/search
+   *               jump). closePreview returns to `wikiBrowseMode`.
+   */
+  wikiMode: "graph" | "search" | "preview"
+  /** Remembered browse tab so closePreview / nav entry return to the right surface. */
+  wikiBrowseMode: "graph" | "search"
+  /**
    * One-shot tab preselect for the unified Tasks surface. Set it before
    * navigating to the `todos` view so the surface opens on the intended
    * tab (e.g. jumping straight to a fresh quality scan). TodosView reads
@@ -443,6 +456,7 @@ interface WikiState {
   setExternalPreview: (preview: ExternalPreview | null) => void
   setPendingScrollImageSrc: (src: string | null) => void
   setActiveView: (view: WikiState["activeView"]) => void
+  setWikiBrowseMode: (mode: "graph" | "search") => void
   setTodosInitialTab: (tab: WikiState["todosInitialTab"]) => void
   setLlmConfig: (config: LlmConfig) => void
   setGlobalLlmConfig: (config: LlmConfig) => void
@@ -477,6 +491,8 @@ export const useWikiStore = create<WikiState>((set) => ({
   previewReturnView: null,
   pendingScrollImageSrc: null,
   activeView: "wiki",
+  wikiMode: "graph",
+  wikiBrowseMode: "graph",
   todosInitialTab: null,
   llmConfig: {
     provider: "openai",
@@ -535,6 +551,7 @@ export const useWikiStore = create<WikiState>((set) => ({
       previewContentPath: null,
       externalPreview: null,
       activeView: "wiki",
+      wikiMode: "preview",
       previewReturnView:
         state.activeView === "wiki" ? state.previewReturnView : state.activeView,
     })),
@@ -545,6 +562,7 @@ export const useWikiStore = create<WikiState>((set) => ({
       previewContentPath: selectedFile,
       externalPreview: null,
       activeView: "wiki",
+      wikiMode: "preview",
       previewReturnView:
         state.activeView === "wiki" ? state.previewReturnView : state.activeView,
     })),
@@ -556,10 +574,23 @@ export const useWikiStore = create<WikiState>((set) => ({
       externalPreview: null,
       activeView: state.previewReturnView ?? "wiki",
       previewReturnView: null,
+      // Return to the last browse surface (graph / search), not the graph by
+      // default — a user who searched, clicked a result, and closes the page
+      // expects to land back on search, not the graph.
+      wikiMode: state.wikiBrowseMode,
     })),
   setExternalPreview: (externalPreview) => set({ externalPreview }),
   setPendingScrollImageSrc: (pendingScrollImageSrc) => set({ pendingScrollImageSrc }),
-  setActiveView: (activeView) => set({ activeView, previewReturnView: null }),
+  setActiveView: (activeView) =>
+    set((state) => ({
+      activeView,
+      previewReturnView: null,
+      // Entering the Knowledge view via nav lands on browse (graph/search),
+      // never on a stale "preview" left over from a previous jump.
+      wikiMode: activeView === "wiki" ? state.wikiBrowseMode : state.wikiMode,
+    })),
+  setWikiBrowseMode: (mode) =>
+    set({ wikiMode: mode, wikiBrowseMode: mode, activeView: "wiki" }),
   setTodosInitialTab: (todosInitialTab) => set({ todosInitialTab }),
   searchApiConfig: {
     provider: "none",
