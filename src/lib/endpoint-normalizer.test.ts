@@ -58,6 +58,25 @@ describe("normalizeEndpoint — chat_completions mode", () => {
     expect(r.normalized).toBe("https://open.bigmodel.cn/api/paas/v4")
   })
 
+  it("preserves the GLM Coding Plan base URL (/api/coding/paas/v4)", () => {
+    // Coding Plan subscribers MUST use /api/coding/paas/v4 (not /api/paas/v4);
+    // the normalizer must not strip the /coding segment or warn about a
+    // missing version segment.
+    const r = normalizeEndpoint(
+      "https://open.bigmodel.cn/api/coding/paas/v4",
+      "chat_completions",
+    )
+    expect(r.normalized).toBe("https://open.bigmodel.cn/api/coding/paas/v4")
+    expect(r.changed).toBe(false)
+    expect(r.warning).toBeUndefined()
+
+    const stripped = normalizeEndpoint(
+      "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions",
+      "chat_completions",
+    )
+    expect(stripped.normalized).toBe("https://open.bigmodel.cn/api/coding/paas/v4")
+  })
+
   it("warns when the URL is a bare host with no version path", () => {
     const r = normalizeEndpoint("https://api.openai.com", "chat_completions")
     // Don't auto-add /v1 — different providers use different segments.

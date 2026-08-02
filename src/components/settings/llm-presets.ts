@@ -356,6 +356,7 @@ export const LLM_PRESETS: LlmPreset[] = [
     // Vision-capable models use the same OpenAI-compatible image_url
     // content blocks as our generic chat-completions wire.
     suggestedModels: [
+      "glm-5.2",
       "glm-5.1",
       "glm-5-turbo",
       "glm-5",
@@ -377,6 +378,28 @@ export const LLM_PRESETS: LlmPreset[] = [
       "glm-4-flash",
       "glm-4v-plus",
       "glm-zero-preview",
+    ],
+    suggestedContextSize: 128000,
+  },
+  {
+    // GLM Coding Plan (智谱AI 编程计划) subscribers MUST use the
+    // /api/coding/paas/v4 base URL. The standard /api/paas/v4 endpoint bills
+    // the pay-as-you-go account balance instead of the plan quota, so a valid
+    // plan key still returns HTTP 429 "1113 余额不足或无可用资源包". Per Zhipu's
+    // official FAQ, all plan tiers support GLM-5.2 / GLM-5-Turbo / GLM-4.7.
+    id: "zhipu-coding-plan",
+    label: "智谱 GLM Coding Plan (编程套餐)",
+    hint: "open.bigmodel.cn/api/coding",
+    provider: "custom",
+    baseUrl: "https://open.bigmodel.cn/api/coding/paas/v4",
+    defaultModel: "glm-5.2",
+    apiMode: "chat_completions",
+    suggestedModels: [
+      "glm-5.2",
+      "glm-5.1",
+      "glm-5-turbo",
+      "glm-4.7",
+      "glm-4.6",
     ],
     suggestedContextSize: 128000,
   },
