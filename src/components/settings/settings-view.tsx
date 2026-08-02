@@ -15,6 +15,7 @@ import {
   Server,
   Settings,
   FileText,
+  Sparkles,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { invoke } from "@tauri-apps/api/core"
@@ -35,6 +36,7 @@ import { MultimodalSection } from "./sections/multimodal-section"
 import { WebSearchSection } from "./sections/web-search-section"
 import { OutputSection } from "./sections/output-section"
 import { InterfaceSection } from "./sections/interface-section"
+import { SkillsSection } from "./sections/skills-section"
 import { NetworkSection } from "./sections/network-section"
 import { ScheduledImportSection } from "./sections/scheduled-import-section"
 import { SourceWatchSection } from "./sections/source-watch-section"
@@ -58,6 +60,7 @@ type CategoryId =
   | "api-server"
   | "output"
   | "interface"
+  | "skills"
   | "maintenance"
   | "changelog"
   | "about"
@@ -84,6 +87,7 @@ const CATEGORIES: Category[] = [
   { id: "api-server", labelKey: "settings.categories.apiServer", icon: Server },
   { id: "output", labelKey: "settings.categories.output", icon: Languages },
   { id: "interface", labelKey: "settings.categories.interface", icon: Palette },
+  { id: "skills", labelKey: "settings.categories.skills", icon: Sparkles },
   { id: "maintenance", labelKey: "settings.categories.maintenance", icon: Wrench },
   { id: "changelog", labelKey: "settings.categories.changelog", icon: History },
   { id: "about", labelKey: "settings.categories.about", icon: Info },
@@ -645,6 +649,11 @@ export function SettingsView() {
         return <OutputSection draft={draft} setDraft={setDraft} />
       case "interface":
         return <InterfaceSection draft={draft} setDraft={setDraft} onThemeChange={applyTheme} />
+      case "skills":
+        // SkillsSection manages its own store state (selected/disabled
+        // skills) and persists directly, so it bypasses the shared draft /
+        // global Save button (like the "llm" section).
+        return <SkillsSection />
       case "maintenance":
         return <MaintenanceSection />
       case "changelog":
@@ -713,8 +722,9 @@ export function SettingsView() {
 
         {/* Global Save bar hidden for sections that persist inline:
             - "llm" saves per-row on every edit (independent per-preset state)
+            - "skills" persists selected/disabled skills directly
             - "about" has no draft-bound fields */}
-        {active !== "about" && active !== "llm" && (
+        {active !== "about" && active !== "llm" && active !== "skills" && (
           <div className="shrink-0 border-t bg-background/80 backdrop-blur px-8 py-3">
             <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
               <p className={`text-xs ${saveError ? "text-destructive" : "text-muted-foreground"}`}>

@@ -31,7 +31,9 @@
     "todos": "Tasks",
     "scanQuality": "Scan quality",
     "updateAvailable": "Update available",
-    "updateAvailableSuffix": " · update"
+    "updateAvailableSuffix": " · update",
+    "importFiles": "Import",
+    "importFilesHint": "Choose files or a folder to import into the knowledge base"
   },
   "updateBanner": {
     "message": "Version {{version}} is available",
@@ -413,6 +415,7 @@
       "apiServer": "API + MCP",
       "output": "Output",
       "interface": "Interface",
+      "skills": "Skills",
       "maintenance": "Maintenance",
       "changelog": "Changelog",
       "about": "About"

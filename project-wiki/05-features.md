@@ -7,8 +7,14 @@
 ## A. 导入（Ingest）
 
 **做什么**：把文档转成互链 wiki 页面。**文件**：`src/components/sources/*`、`src/lib/ingest.ts`、
-`source-lifecycle.ts`、`mineru.ts`、`extract-source-images.ts`、`image-caption-pipeline.ts`；
-后端 `commands/fs.rs`。
+`source-lifecycle.ts`、`source-import-actions.ts`（共享的"选文件/选文件夹→导入"入口）、`mineru.ts`、
+`extract-source-images.ts`、`image-caption-pipeline.ts`；后端 `commands/fs.rs`。
+
+**导入入口**（均复用同一管线 `importSourceFiles`/`importSourceFolder`，过滤常量集中在
+`IMPORT_FILE_FILTERS`，避免两处漂移）：
+- 文件(Sources) 视图的导入按钮。
+- **知识库视图的「文件导入」入口**（`KnowledgeView`）：点开后选"导入文件/导入文件夹"，导入完成后跳到
+  文件(Sources) 视图展示刚导入的资料。数据导入是核心业务，该入口只是薄封装，不另起实现。
 
 **流程**（两步式 CoT）：
 1. 导入文件/文件夹到 `raw/sources/`（支持递归文件夹，路径作为分类上下文）。

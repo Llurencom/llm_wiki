@@ -31,7 +31,9 @@
     "todos": "待办",
     "scanQuality": "质量检查",
     "updateAvailable": "有可用更新",
-    "updateAvailableSuffix": " · 有更新"
+    "updateAvailableSuffix": " · 有更新",
+    "importFiles": "文件导入",
+    "importFilesHint": "选择导入文件或文件夹到知识库"
   },
   "updateBanner": {
     "message": "新版本 {{version}} 已发布",
@@ -413,6 +415,7 @@
       "apiServer": "API + MCP",
       "output": "输出偏好",
       "interface": "界面",
+      "skills": "Skills",
       "maintenance": "维护",
       "changelog": "更新日志",
       "about": "关于"
