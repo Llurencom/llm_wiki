@@ -33,7 +33,8 @@
     "updateAvailable": "Update available",
     "updateAvailableSuffix": " · update",
     "importFiles": "Import",
-    "importFilesHint": "Choose files or a folder to import into the knowledge base"
+    "importFilesHint": "Choose files or a folder to import into the knowledge base",
+    "historicalFiles": "History"
   },
   "updateBanner": {
     "message": "Version {{version}} is available",

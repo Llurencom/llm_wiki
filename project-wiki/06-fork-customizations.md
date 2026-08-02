@@ -16,7 +16,8 @@
 `src/components/layout/content-area.tsx`。
 - `CORE_ITEMS`：**对话(Chat)、知识库(Wiki)**（常驻）。知识库是用户"知识/经验分身"的成果，
   与对话（积累+使用两条核心业务的入口）并列为两个一等入口。
-- `MORE_ITEMS`：**文件(Sources)**（收进"⋯"菜单）+ 扫描质量（直达 Lint）。Skills 已移入设置。
+- `MORE_ITEMS`：**已移除**（⋯ More 菜单不再存在）。原"文件(Sources)"入口并入「文件导入」按钮的弹出菜单
+  （命名「**历史文件**」，与导入选项间加分隔线）；质量检查入口移除（有待办时底部 Tasks 自动出现）；Skills 移入设置。
 - **搜索 / 图谱已并入知识库视图**（`KnowledgeView`，见 [05 §D/§E](05-features.md)）：知识库视图含
   「**关系图谱 | 搜索**」并列 Tab（默认图谱，store `wikiMode` 驱动），不再有独立导航项。点知识库即默认
   看到关系图谱；搜索与图谱为并列的两个浏览面。

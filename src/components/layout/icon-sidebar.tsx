@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
-  FileText, FolderOpen, Settings, ArrowLeftRight, ListTodo, MessageSquare, MoreHorizontal, ShieldCheck, BookOpen, Upload, FileUp, FolderUp,
+  FileText, FolderOpen, Settings, ArrowLeftRight, ListTodo, MessageSquare, BookOpen, Upload, FileUp, FolderUp,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
@@ -23,13 +23,6 @@ const CORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] =
   { view: "wiki", icon: BookOpen, labelKey: "nav.wiki" },
 ]
 
-// Secondary layer — reachable on demand from the "More" menu. Search and
-// Graph are parallel tabs inside the Knowledge (wiki) view; Skills now lives
-// under Settings, so the More menu only keeps 文件 (import/raw sources).
-const MORE_ITEMS: { view: NavView; icon: typeof FileText; labelKey: string }[] = [
-  { view: "sources", icon: FolderOpen, labelKey: "nav.sources" },
-]
-
 interface IconSidebarProps {
   onSwitchProject: () => void
 }
@@ -38,10 +31,7 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
   const { t } = useTranslation()
   const activeView = useWikiStore((s) => s.activeView)
   const setActiveView = useWikiStore((s) => s.setActiveView)
-  const setTodosInitialTab = useWikiStore((s) => s.setTodosInitialTab)
   const todoCount = useTodoTotalPending()
-  const [moreOpen, setMoreOpen] = useState(false)
-  const moreRef = useRef<HTMLDivElement>(null)
   // Use `hasAvailableUpdate` (ignores dismiss state) rather than
   // `shouldShowUpdateBanner`. The dot is a passive signpost — it
   // should keep marking the gear as long as the update exists, even
@@ -67,20 +57,6 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
     const interval = setInterval(check, 30000)
     return () => clearInterval(interval)
   }, [])
-
-  useEffect(() => {
-    if (!moreOpen) return
-    const onPointerDown = (event: PointerEvent) => {
-      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
-        setMoreOpen(false)
-      }
-    }
-    document.addEventListener("pointerdown", onPointerDown)
-    return () => document.removeEventListener("pointerdown", onPointerDown)
-  }, [moreOpen])
-
-  // A More-menu view counts as active so the More button stays highlighted.
-  const moreActive = MORE_ITEMS.some((item) => item.view === activeView)
 
   // "文件导入" gateway — sits directly below 知识库 in the sidebar. It is an
   // ACTION, not a view: clicking it opens a small menu to pick import type,
@@ -196,57 +172,20 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
                   <FolderUp className="h-4 w-4 shrink-0" />
                   {t("sources.importSourceFolder")}
                 </button>
-              </div>
-            )}
-          </div>
-          {/* More — secondary views appear on demand, not always spread out */}
-          <div ref={moreRef} className="relative">
-            <Tooltip>
-              <TooltipTrigger
-                onClick={() => setMoreOpen((open) => !open)}
-                className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
-                  moreActive || moreOpen
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-                }`}
-              >
-                <MoreHorizontal className="h-5 w-5" />
-              </TooltipTrigger>
-              <TooltipContent side="right">{t("nav.more")}</TooltipContent>
-            </Tooltip>
-            {moreOpen && (
-              <div className="absolute left-11 top-0 z-30 w-40 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg">
-                {MORE_ITEMS.map(({ view, icon: Icon, labelKey }) => (
-                  <button
-                    key={view}
-                    type="button"
-                    onClick={() => {
-                      setActiveView(view)
-                      setMoreOpen(false)
-                    }}
-                    className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors ${
-                      activeView === view ? "bg-accent text-foreground" : "hover:bg-accent/60"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {t(labelKey)}
-                  </button>
-                ))}
-                {/* Scan quality — an intentional action, not a resting view.
-                    The Tasks entry only appears once issues exist, so this
-                    keeps the quality scan reachable on a clean project. It
-                    opens the Tasks surface straight on the lint tab. */}
+                {/* 分隔线：导入操作 与 已有资料（历史文件）分开 */}
+                <div className="my-1 h-px bg-border" />
                 <button
                   type="button"
                   onClick={() => {
-                    setTodosInitialTab("lint")
-                    setActiveView("todos")
-                    setMoreOpen(false)
+                    setActiveView("sources")
+                    setImportOpen(false)
                   }}
-                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors hover:bg-accent/60"
+                  className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors ${
+                    activeView === "sources" ? "bg-accent text-foreground" : "hover:bg-accent/60"
+                  }`}
                 >
-                  <ShieldCheck className="h-4 w-4 shrink-0" />
-                  {t("nav.scanQuality")}
+                  <FolderOpen className="h-4 w-4 shrink-0" />
+                  {t("nav.historicalFiles")}
                 </button>
               </div>
             )}

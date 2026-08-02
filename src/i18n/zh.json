@@ -33,7 +33,8 @@
     "updateAvailable": "有可用更新",
     "updateAvailableSuffix": " · 有更新",
     "importFiles": "文件导入",
-    "importFilesHint": "选择导入文件或文件夹到知识库"
+    "importFilesHint": "选择导入文件或文件夹到知识库",
+    "historicalFiles": "历史文件"
   },
   "updateBanner": {
     "message": "新版本 {{version}} 已发布",

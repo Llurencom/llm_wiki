@@ -39,12 +39,13 @@ src/
 
 - **AppLayout** (`app-layout.tsx`)：三栏可拖拽布局；据 `activeView` 由
   `app-layout-visibility.ts` 决定左右面板显隐（Settings/Chat 隐藏左右；Sources 隐藏右）。
-- **IconSidebar** (`icon-sidebar.tsx`)：竖向导航，**两级**（fork 定制）：
+- **IconSidebar** (`icon-sidebar.tsx`)：竖向导航（fork 定制）：
   - `CORE_ITEMS`：**对话 Chat、知识库 Wiki**（常驻；知识库是核心成果，与对话并列为两个一等入口）。
-  - **「文件导入」动作按钮**（紧邻 CORE，位于知识库下方）：点开菜单选"导入文件/导入文件夹"，复用
-    `pickAndImportFiles/Folder`（→ `importSourceFiles/Folder`，与文件视图同一管线），导入后跳到文件(Sources)视图。
-  - `MORE_ITEMS`：**文件 Sources**（"⋯"菜单）+ 扫描质量（直达 Lint）。Search / Graph
-    已并入知识库视图（见下 KnowledgeView）；**Skills 已移入设置**（Settings 的「Skills」分区）。三者都不再有独立导航项。
+  - **「文件导入」动作按钮**（紧邻 CORE，位于知识库下方）：弹出菜单含「导入文件 / 导入文件夹」（复用
+    `pickAndImportFiles/Folder` → `importSourceFiles/Folder`，与文件视图同一管线，导入后跳到文件视图）+
+    **分隔线** + 「**历史文件**」（→ `setActiveView("sources")`，即原 ⋯ 里的"文件"入口）。
+  - （原 ⋯ More 菜单已移除——文件入口并入"文件导入"菜单；Search/Graph 并入知识库视图；Skills 移入设置；
+    质量检查入口移除，有待办/质量问题时底部 Tasks 图标自动出现。）
   - 底部条件项：Tasks（仅当有 review/lint 待办时出现）、Daemon 状态、Settings（有更新时红点）、
     Switch Project。
 - **SidebarPanel** (`sidebar-panel.tsx`)：左侧目录面板，**按 `activeView` 驱动**（已去掉旧的
