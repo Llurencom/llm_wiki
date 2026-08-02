@@ -109,9 +109,9 @@
 
 **Skills 管理**（`src/components/settings/sections/skills-section.tsx` + 后端 `agent/skills.rs`）：
 扫描 `.llm-wiki/skills`、`~/.claude/skills`、`~/.codex/skills`、`~/.agents/skills`，列出并可逐项
-启用/禁用。支持**新增**（`agent_create_skill`：在项目 `.llm-wiki/skills/<id>.md` 写 frontmatter
-`name`+`description`+指令正文，id 由名称 slug 化、校验、拒覆盖）与**删除**（`agent_delete_skill`：
-按根目录优先解析并删除 `<id>.md` 或 `<id>/SKILL.md`，并清理 selectedSkills/disabledSkills 残留）。
+  启用/禁用。支持**新增**（`agent_create_skill`：在项目 `.llm-wiki/skills/<id>.md` 写 frontmatter
+  `name`+`description`+指令正文，id 由名称 slug 化、校验、拒覆盖）与**删除**（`agent_delete_skill`：
+  用与列表相同的发现逻辑解析（含嵌套子目录），按根目录优先删除 `<id>.md` 或 `<id>/SKILL.md` 所在文件/文件夹，并清理 selectedSkills/disabledSkills 残留）。
 
 ## J. 本地 HTTP API + MCP + AI Agent Skill
 见 [04-backend.md](04-backend.md#本地服务)。api_server(:19828) 暴露项目给外部 agent/脚本与 MCP；

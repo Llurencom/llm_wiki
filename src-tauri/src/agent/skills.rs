@@ -84,45 +84,54 @@ pub fn agent_create_skill(
     Ok(file_path.to_string_lossy().replace('\\', "/"))
 }
 
-/// Delete a discovered skill. Resolves the skill's actual file/folder the
-/// same way listing does — first matching root wins (project before user
-/// roots), so a project skill that shadows a same-id user skill deletes the
-/// project copy (and the user copy would resurface on the next scan). A
-/// single-file skill (`<id>.md`) deletes the file; a folder skill
-/// (`<id>/SKILL.md`) deletes the whole folder. Returns the removed path.
+/// Delete a discovered skill. Resolves the skill's actual file/folder via the
+/// SAME discovery pass listing uses (`discover_skill_candidates`), so anything
+/// that can be listed can be deleted — including skills nested in subfolders
+/// (e.g. `<root>/writing/<id>/SKILL.md`), which a naive `root/<id>` lookup
+/// would miss and silently fail to delete. First root wins (project before
+/// user roots), matching how `list_available_skills` dedupes. A single-file
+/// skill (`<id>.md`) deletes the file; a folder skill (`<id>/SKILL.md`)
+/// deletes the whole folder. Returns the removed path.
 #[tauri::command]
 pub fn agent_delete_skill(project_path: String, id: String) -> Result<String, String> {
     let slug = normalize_skill_name(&id)
         .ok_or_else(|| format!("Invalid skill id \"{id}\"."))?;
     for root in skill_roots(&project_path) {
-        let single = root.path.join(format!("{slug}.md"));
-        if is_regular_file(&single) {
-            fs::remove_file(&single)
-                .map_err(|e| format!("Failed to delete skill file: {e}"))?;
-            return Ok(single.to_string_lossy().replace('\\', "/"));
-        }
-        let dir = root.path.join(&slug);
-        if is_regular_dir(&dir) && find_skill_main_file(&dir).is_some() {
-            fs::remove_dir_all(&dir)
-                .map_err(|e| format!("Failed to delete skill folder: {e}"))?;
-            return Ok(dir.to_string_lossy().replace('\\', "/"));
+        for candidate in discover_skill_candidates(&root.path) {
+            if candidate.id != slug {
+                continue;
+            }
+            // candidate.path is the loadable file: `<id>.md` (single-file
+            // skill) or `<...>/<id>/SKILL.md` (folder skill). For a folder
+            // skill, delete the whole folder so supporting assets go too.
+            let is_skill_md = candidate
+                .path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .is_some_and(|name| name.eq_ignore_ascii_case("SKILL.md"));
+            let target: PathBuf = if is_skill_md {
+                candidate
+                    .path
+                    .parent()
+                    .map(Path::to_path_buf)
+                    .unwrap_or_else(|| candidate.path.clone())
+            } else {
+                candidate.path.clone()
+            };
+            let result_path = target.to_string_lossy().replace('\\', "/");
+            if target.is_dir() {
+                fs::remove_dir_all(&target)
+                    .map_err(|e| format!("Failed to delete skill folder: {e}"))?;
+            } else {
+                fs::remove_file(&target)
+                    .map_err(|e| format!("Failed to delete skill file: {e}"))?;
+            }
+            return Ok(result_path);
         }
     }
     Err(format!(
         "Skill \"{slug}\" was not found in any scanned folder."
     ))
-}
-
-fn is_regular_file(path: &Path) -> bool {
-    fs::symlink_metadata(path)
-        .map(|meta| !meta.file_type().is_symlink() && meta.is_file())
-        .unwrap_or(false)
-}
-
-fn is_regular_dir(path: &Path) -> bool {
-    fs::symlink_metadata(path)
-        .map(|meta| !meta.file_type().is_symlink() && meta.is_dir())
-        .unwrap_or(false)
 }
 
 pub fn load_project_skills(project_path: &str, requested: &[String]) -> Vec<AgentSkill> {
@@ -916,5 +925,39 @@ mod tests {
         let root = std::env::temp_dir().join(format!("llm-wiki-skills-{}", Uuid::new_v4()));
         let result = agent_delete_skill(root.to_str().unwrap().to_string(), "ghost".to_string());
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn agent_delete_skill_removes_nested_folder_skill() {
+        // A skill nested in a subfolder (writing/<id>/SKILL.md) IS listed by
+        // list_available_skills, so it must also be deletable — the earlier
+        // naive root/<id> lookup missed it and silently failed.
+        let root = std::env::temp_dir().join(format!("llm-wiki-skills-{}", Uuid::new_v4()));
+        let skill_dir = root
+            .join(".llm-wiki")
+            .join("skills")
+            .join("writing")
+            .join("article-illustrator");
+        fs::create_dir_all(&skill_dir).unwrap();
+        fs::write(
+            skill_dir.join("SKILL.md"),
+            "---\nname: Article Illustrator\ndescription: Draw article images\n---\nUse draw.sh.",
+        )
+        .unwrap();
+
+        // Sanity: it's discovered.
+        let listed = list_available_skills(root.to_str().unwrap());
+        assert!(listed.iter().any(|s| s.id == "article-illustrator"));
+
+        let removed =
+            agent_delete_skill(root.to_str().unwrap().to_string(), "article-illustrator".to_string())
+                .expect("nested skill should delete");
+        assert!(removed.ends_with("/article-illustrator"));
+        assert!(!skill_dir.exists());
+
+        let listed = list_available_skills(root.to_str().unwrap());
+        assert!(listed.iter().all(|s| s.id != "article-illustrator"));
+
+        let _ = fs::remove_dir_all(root);
     }
 }

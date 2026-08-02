@@ -56,6 +56,7 @@ export function SkillsSection() {
   const [skills, setSkills] = useState<AvailableAgentSkill[]>([])
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
+  const [statusError, setStatusError] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
   const disabled = useMemo(() => new Set(disabledSkills), [disabledSkills])
@@ -94,6 +95,7 @@ export function SkillsSection() {
     }
     setLoading(true)
     setStatus(null)
+    setStatusError(false)
     try {
       const found = await invoke<AvailableAgentSkill[]>("agent_list_skills", {
         projectPath: project.path,
@@ -117,6 +119,7 @@ export function SkillsSection() {
         count: found.length,
       }))
     } catch (err) {
+      setStatusError(true)
       setStatus(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
@@ -207,6 +210,7 @@ export function SkillsSection() {
         setPendingDeleteId(null)
         await scan()
       } catch (err) {
+        setStatusError(true)
         setStatus(err instanceof Error ? err.message : String(err))
         setPendingDeleteId(null)
       }
@@ -275,7 +279,11 @@ export function SkillsSection() {
         </div>
       </div>
 
-      {status && <p className="text-xs text-muted-foreground">{status}</p>}
+      {status && (
+        <p className={`text-xs ${statusError ? "text-destructive" : "text-muted-foreground"}`}>
+          {status}
+        </p>
+      )}
 
       {skills.length === 0 ? (
         <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
