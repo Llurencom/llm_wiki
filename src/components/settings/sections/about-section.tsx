@@ -5,7 +5,7 @@ import { openUrl } from "@tauri-apps/plugin-opener"
 import { apiServerStatus, clipServerStatus } from "@/commands/fs"
 import { Button } from "@/components/ui/button"
 import { API_SERVER_HEALTH_URL, API_SERVER_PORT } from "@/lib/api-server-constants"
-import { useUpdateStore, hasAvailableUpdate } from "@/stores/update-store"
+import { useUpdateStore, shouldShowUpdateBanner } from "@/stores/update-store"
 import { checkForUpdates, toLatestReleaseUrl } from "@/lib/update-check"
 import { saveUpdateCheckState } from "@/lib/project-store"
 
@@ -55,7 +55,7 @@ export function AboutSection() {
     useUpdateStore.getState().setChecking(true)
     const result = await checkForUpdates({
       currentVersion: __APP_VERSION__,
-      repo: "nashsu/llm_wiki",
+      repo: "Llurencom/llm_wiki",
     })
     const now = Date.now()
     useUpdateStore.getState().setResult(result, now)
@@ -109,13 +109,11 @@ export function AboutSection() {
     { label: t("settings.sections.about.apiServer"), value: `${apiStatusDisplay}  @  127.0.0.1:${API_SERVER_PORT}`, mono: true },
   ]
 
-  // About panel = user-initiated navigation. They came here on
-  // purpose (often guided by the gear / About red dot) and expect
-  // to see WHY the dot is there. So this surface ignores the
-  // user's "dismiss" preference — that preference only suppresses
-  // the unrequested TOP banner. Within Settings, an available
-  // update is always shown in detail.
-  const showAvailable = hasAvailableUpdate(updateStore)
+  // The About panel honors the dismiss preference: once the user takes the
+  // update action (opens the download page) or clicks "later", the detail
+  // banner clears until a newer version ships — consistent with the red dots
+  // on the Settings gear and the About row.
+  const showAvailable = shouldShowUpdateBanner(updateStore)
   const lastCheckFailed = updateStore.lastResult?.kind === "error"
   const lastCheckedLabel = updateStore.lastCheckedAt
     ? lastCheckFailed
@@ -205,7 +203,7 @@ export function AboutSection() {
       </div>
 
       <div className="rounded-md border p-4 text-sm">
-        <div className="font-medium">LLM Wiki</div>
+        <div className="font-medium">Lluren Wiki</div>
         <p className="mt-1 text-xs text-muted-foreground">
           {t("settings.sections.about.appDescription")}
           {" "}
@@ -219,15 +217,15 @@ export function AboutSection() {
            */}
           <a
             className="cursor-pointer underline underline-offset-2 hover:text-primary"
-            href="https://github.com/nashsu/llm_wiki"
+            href="https://github.com/Llurencom/llm_wiki"
             onClick={(e) => {
               e.preventDefault()
-              void openUrl("https://github.com/nashsu/llm_wiki").catch((err) => {
+              void openUrl("https://github.com/Llurencom/llm_wiki").catch((err) => {
                 console.error("[about] openUrl failed:", err)
               })
             }}
           >
-            github.com/nashsu/llm_wiki
+            github.com/Llurencom/llm_wiki
           </a>
         </p>
       </div>
@@ -280,6 +278,10 @@ function UpdateAvailableBanner({
         alert(`Could not open browser. Visit:\n${targetUrl}`)
       }
     }
+    // Taking the download action = acknowledging this version: mark it
+    // dismissed so the red dots (Settings gear, About row) and this banner
+    // clear. It reappears naturally when a newer release ships.
+    onDismiss()
   }
 
   const preview = releaseBody.slice(0, 400)

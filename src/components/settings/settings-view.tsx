@@ -26,7 +26,7 @@ import i18n from "@/i18n"
 import { Button } from "@/components/ui/button"
 import { useWikiStore } from "@/stores/wiki-store"
 import { useChatStore } from "@/stores/chat-store"
-import { useUpdateStore, hasAvailableUpdate } from "@/stores/update-store"
+import { useUpdateStore, shouldShowUpdateBanner } from "@/stores/update-store"
 import { useZoomStore } from "@/stores/zoom-store"
 import { loadSourceWatchConfig, saveLanguage, saveTheme, loadTheme } from "@/lib/project-store"
 import { applyTheme, type AppTheme } from "@/lib/theme"
@@ -231,15 +231,11 @@ export function SettingsView() {
   const setGeneralConfig = useWikiStore((s) => s.setGeneralConfig)
   const maxHistoryMessages = useChatStore((s) => s.maxHistoryMessages)
   const setMaxHistoryMessages = useChatStore((s) => s.setMaxHistoryMessages)
-  // Drives the red dot next to the "About" row in the settings
-  // sidebar. Uses `hasAvailableUpdate` (NOT `shouldShowUpdateBanner`)
-  // so the indicator remains even after the user dismisses the
-  // top banner — the user explicitly asked for the gear/About dots
-  // to keep showing as a signpost so they can find the update
-  // again later. The top banner stays gated by the dismiss
-  // preference so the more aggressive interruption only fires once
-  // per version.
-  const updateAvailable = useUpdateStore((s) => hasAvailableUpdate(s))
+  // Drives the red dot next to the "About" row in the settings sidebar.
+  // Respects the dismiss preference: it clears once the user acknowledges
+  // the update (opens the download page / clicks "later") and reappears when
+  // a newer version ships.
+  const updateAvailable = useUpdateStore((s) => shouldShowUpdateBanner(s))
 
   const [active, setActive] = useState<CategoryId>("general")
   const [advancedOpen, setAdvancedOpen] = useState(false)

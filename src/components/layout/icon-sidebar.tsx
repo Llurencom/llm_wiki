@@ -5,7 +5,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useWikiStore } from "@/stores/wiki-store"
 import { useTodoTotalPending } from "@/lib/todos"
-import { useUpdateStore, hasAvailableUpdate } from "@/stores/update-store"
+import { useUpdateStore, shouldShowUpdateBanner } from "@/stores/update-store"
 import { useTranslation } from "react-i18next"
 import { pickAndImportFiles, pickAndImportFolder } from "@/lib/source-import-actions"
 import logoImg from "@/assets/logo.jpg"
@@ -32,14 +32,10 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
   const activeView = useWikiStore((s) => s.activeView)
   const setActiveView = useWikiStore((s) => s.setActiveView)
   const todoCount = useTodoTotalPending()
-  // Use `hasAvailableUpdate` (ignores dismiss state) rather than
-  // `shouldShowUpdateBanner`. The dot is a passive signpost — it
-  // should keep marking the gear as long as the update exists, even
-  // after the user closes the more aggressive top banner. Without
-  // this split, dismissing the banner would silently lose the only
-  // remaining indicator that an update is available, so the user
-  // never finds their way back to it.
-  const updateAvailable = useUpdateStore((s) => hasAvailableUpdate(s))
+  // Update dot respects the dismiss preference: it clears once the user
+  // acknowledges the update (opens the download page / clicks "later") and
+  // reappears when a newer version ships.
+  const updateAvailable = useUpdateStore((s) => shouldShowUpdateBanner(s))
 
   // Daemon health check
   const [daemonStatus, setDaemonStatus] = useState<string>("starting")
@@ -110,7 +106,7 @@ export function IconSidebar({ onSwitchProject }: IconSidebarProps) {
         <div className="mb-2 flex items-center justify-center">
           <img
             src={logoImg}
-            alt="LLM Wiki"
+            alt="Lluren Wiki"
             className="h-8 w-8 rounded-[22%]"
           />
         </div>

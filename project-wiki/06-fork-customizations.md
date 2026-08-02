@@ -91,7 +91,13 @@
 | `src-tauri/tauri.windows.conf.json` | 补 `"title": "Lluren Wiki"`（修复 Windows 标题栏回退 "Tauri App"） |
 | `src-tauri/Cargo.toml` | `[[bin]] name = "Lluren-Wiki"`（修复 dev 任务栏 exe 名） |
 | `index.html` | `<title>Lluren Wiki</title>` |
+| 关于页 + logo | `about-section.tsx` 品牌名 "Lluren Wiki"、GitHub 链接 `Llurencom/llm_wiki`；`icon-sidebar.tsx` logo `alt="Lluren Wiki"` |
+| 更新检查源 | `App.tsx`（启动自检）与 `about-section.tsx`（手动检查）的 `checkForUpdates` repo 均为 `Llurencom/llm_wiki`（不再查上游 nashsu；fork 无 release 时静默无提示） |
 | 前端文案 / i18n | 相关字符串改为 Lluren Wiki |
+
+**更新提示红点行为**：图标栏齿轮、设置"关于"行、关于页详情三处红点均改用 `shouldShowUpdateBanner`（尊重
+dismiss）。点"打开下载页"会同时 `onDismiss()`，故红点与横幅在点击后**立即消失**，直到下一个新版本出现再亮起
+（"稍后"按钮同理）。
 
 > **易错点**：Windows 上 `tauri.windows.conf.json` 会覆盖基座；若只改基座 title，Windows 标题栏
 > 仍显示 "Tauri App"。任务栏名称在 dev 下取 exe 名，故需改 `[[bin]] name`。
